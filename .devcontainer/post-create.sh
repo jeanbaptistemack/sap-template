@@ -15,6 +15,16 @@ echo "============================================"
 # 1. Install Claude Code CLI
 # =============================================================================
 echo "[1/5] Installing Claude Code CLI..."
+
+# Restore ~/.claude.json from backup BEFORE installer runs (avoids repeated warnings)
+if [ ! -f "$HOME/.claude.json" ]; then
+  BACKUP=$(ls "$HOME/.claude/backups/.claude.json.backup."* 2>/dev/null | sort | tail -1)
+  if [ -n "$BACKUP" ]; then
+    cp "$BACKUP" "$HOME/.claude.json"
+    echo "  ~/.claude.json restored from backup"
+  fi
+fi
+
 if command -v claude &>/dev/null; then
   echo "  claude found at $(which claude)"
 else
@@ -25,15 +35,6 @@ else
 fi
 export PATH="$HOME/.local/bin:$HOME/.claude/bin:$PATH"
 echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$PATH"' >> ~/.bashrc
-
-# Restore ~/.claude.json from backup if missing (created by Claude installer)
-if [ ! -f "$HOME/.claude.json" ]; then
-  BACKUP=$(ls "$HOME/.claude/backups/.claude.json.backup."* 2>/dev/null | sort | tail -1)
-  if [ -n "$BACKUP" ]; then
-    cp "$BACKUP" "$HOME/.claude.json"
-    echo "  ~/.claude.json restored from backup"
-  fi
-fi
 
 # =============================================================================
 # 2. npm install (if package.json exists)

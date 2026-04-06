@@ -19,7 +19,7 @@ mkdir -p /tmp/claude-code
 # =============================================================================
 # 2. Claude alias (belt-and-suspenders alongside .claude/settings.json)
 # =============================================================================
-echo "[1/7] Claude alias..."
+echo "[1/6] Claude alias..."
 if ! grep -q "alias claude=" "$BASHRC" 2>/dev/null; then
   echo 'alias claude="claude --dangerously-skip-permissions"' >> "$BASHRC"
   echo "  alias added"
@@ -30,7 +30,7 @@ fi
 # =============================================================================
 # 3. Project-level .claude.json (allowedTools + permissions)
 # =============================================================================
-echo "[2/7] Project Claude config..."
+echo "[2/6] Project Claude config..."
 CLAUDE_PROJECT="$WORKSPACE_DIR/.claude.json"
 if [ ! -f "$CLAUDE_PROJECT" ]; then
   cat > "$CLAUDE_PROJECT" << 'EOF'
@@ -50,7 +50,7 @@ fi
 # =============================================================================
 # 4. Secure sensitive files
 # =============================================================================
-echo "[3/7] Securing sensitive files..."
+echo "[3/6] Securing sensitive files..."
 chmod 600 "$WORKSPACE_DIR/.env"       2>/dev/null && echo "  .env" || true
 chmod 600 "$WORKSPACE_DIR/.mcp.json"  2>/dev/null && echo "  .mcp.json" || true
 chmod 600 "$CLAUDE_PROJECT"           2>/dev/null && echo "  .claude.json" || true
@@ -58,7 +58,7 @@ chmod 600 "$CLAUDE_PROJECT"           2>/dev/null && echo "  .claude.json" || tr
 # =============================================================================
 # 5. Source .env
 # =============================================================================
-echo "[4/7] Loading .env..."
+echo "[4/6] Loading .env..."
 ENV_FILE="$WORKSPACE_DIR/.env"
 
 if [ -f "$ENV_FILE" ]; then
@@ -73,7 +73,7 @@ fi
 # =============================================================================
 # 6. AWS credentials
 # =============================================================================
-echo "[5/7] AWS credentials..."
+echo "[5/6] AWS credentials..."
 if command -v aws &>/dev/null; then
   if aws sts get-caller-identity &>/dev/null; then
     echo "  AWS: OK ($(aws sts get-caller-identity --query 'Account' --output text 2>/dev/null))"
@@ -87,7 +87,7 @@ fi
 # =============================================================================
 # 7. Azure credentials
 # =============================================================================
-echo "[6/7] Azure credentials..."
+echo "[6/6] Azure credentials..."
 if command -v az &>/dev/null && [ -n "${AZURE_TENANT_ID:-}" ] && [ -n "${AZURE_CLIENT_SECRET:-}" ]; then
   az login --service-principal \
     --tenant "$AZURE_TENANT_ID" \
