@@ -1,0 +1,11 @@
+node_modules/
+**/dist/
+.vscode/
+artifacts/*
+!artifacts/.gitkeep
+test-results/*
+!test-results/.gitkeep
+*.png
+*.webm
+
+_references/

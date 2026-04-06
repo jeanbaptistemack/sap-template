@@ -1,0 +1,45 @@
+{
+  "name": "sap-template-devcontainer",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+
+  "mounts": [
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind",
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,readonly"
+  ],
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+
+  "initializeCommand": "mkdir -p ${HOME}/.claude",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Anthropic.claude-code",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  "onCreateCommand": {
+    "git-config": "git config --global --add safe.directory ${containerWorkspaceFolder} && git config --global user.email 'jeanbaptiste.mack@outlook.com' && git config --global user.name 'jeanbaptistemack'",
+    "claude-dirs": "mkdir -p /home/vscode/.claude/tmp /home/vscode/.claude/logs /tmp/claude-code"
+  },
+
+  "postCreateCommand": "bash ${containerWorkspaceFolder}/.devcontainer/post-create.sh",
+
+  "postStartCommand": "bash ${containerWorkspaceFolder}/.devcontainer/post-start.sh",
+
+  "remoteEnv": {
+    "PATH": "${containerEnv:HOME}/.local/bin:${containerEnv:HOME}/.claude/bin:${containerEnv:PATH}",
+    "TMPDIR": "/tmp/claude-code"
+  },
+
+  "containerEnv": {
+    "HISTFILE": "${containerWorkspaceFolder}/.bash_history"
+  }
+}
