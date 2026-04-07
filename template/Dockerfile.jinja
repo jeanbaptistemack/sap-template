@@ -19,7 +19,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 WORKDIR /app
 
 # Copier uniquement ce qui est nécessaire à la résolution des dépendances
-COPY pyproject.toml ./
+COPY pyproject.toml uv.lock ./
 COPY src/ src/
 
 # Installer uniquement les dépendances de production avec bytecode compilé

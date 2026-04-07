@@ -3,7 +3,7 @@
 
 from mcp.server.fastmcp import FastMCP
 
-from {{ project_slug }}.config import settings  # noqa: F401
+import {{ project_slug }}.config  # noqa: F401
 
 mcp = FastMCP("{{ project_name }}")
 
@@ -20,7 +20,7 @@ def main() -> None:
 {%- else %}
 """Point d'entrée principal pour {{ project_name }}."""
 
-from {{ project_slug }}.config import settings  # noqa: F401
+import {{ project_slug }}.config  # noqa: F401
 
 
 def main() -> None:
