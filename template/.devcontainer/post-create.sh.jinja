@@ -62,6 +62,13 @@ echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$PATH"' >> ~/.bashrc
 echo "[5/5] Python dependencies..."
 if [ -f "$WORKSPACE_DIR/pyproject.toml" ]; then
   uv sync --all-extras 2>/dev/null && echo "  uv sync done" || echo "  WARNING: uv sync failed"
+  # Committer uv.lock s'il vient d'être généré
+  if git -C "$WORKSPACE_DIR" status --short 2>/dev/null | grep -q "uv.lock"; then
+    git -C "$WORKSPACE_DIR" add uv.lock && \
+    git -C "$WORKSPACE_DIR" commit -m "chore: add uv.lock" --quiet && \
+    git -C "$WORKSPACE_DIR" push --quiet 2>/dev/null && \
+    echo "  uv.lock committed and pushed" || echo "  WARNING: uv.lock commit failed"
+  fi
 else
   echo "  no pyproject.toml — skipping"
 fi
