@@ -1,4 +1,4 @@
-{%- if project_type == "mcp-server" %}
+{%- if project_type == "mcp-server" -%}
 """Serveur MCP pour {{ project_name }}."""
 
 from mcp.server.fastmcp import FastMCP
@@ -17,7 +17,7 @@ async def healthcheck() -> str:
 def main() -> None:
     """Lancer le serveur MCP (transport stdio par défaut)."""
     mcp.run()
-{%- else %}
+{%- else -%}
 """Point d'entrée principal pour {{ project_name }}."""
 
 import {{ project_slug }}.config  # noqa: F401
