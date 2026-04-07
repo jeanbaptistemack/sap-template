@@ -1,0 +1,29 @@
+{%- if project_type == "mcp-server" %}
+"""Serveur MCP pour {{ project_name }}."""
+
+from mcp.server.fastmcp import FastMCP
+
+from {{ project_slug }}.config import settings  # noqa: F401
+
+mcp = FastMCP("{{ project_name }}")
+
+
+@mcp.tool()
+async def healthcheck() -> str:
+    """Retourne le statut du serveur."""
+    return "ok"
+
+
+def main() -> None:
+    """Lancer le serveur MCP (transport stdio par défaut)."""
+    mcp.run()
+{%- else %}
+"""Point d'entrée principal pour {{ project_name }}."""
+
+from {{ project_slug }}.config import settings  # noqa: F401
+
+
+def main() -> None:
+    """Lancer {{ project_name }}."""
+    print("{{ project_name }} démarré")
+{%- endif %}

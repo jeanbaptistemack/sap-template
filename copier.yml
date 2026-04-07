@@ -1,0 +1,67 @@
+# =============================================================================
+# SYNKRONIC Python Project Template
+# Usage: copier copy gh:jeanbaptistemack/sap-template ./my-project
+# =============================================================================
+
+_subdirectory: template
+_answers_file: .copier-answers.yml
+_min_copier_version: "9.0"
+
+# =============================================================================
+# Questions
+# =============================================================================
+
+project_name:
+  type: str
+  help: "Nom du projet (kebab-case, ex: sap-adt-mcp)"
+  validator: >-
+    {% if not (project_name | regex_search('^[a-z][a-z0-9-]+$')) %}
+    Le nom doit être en kebab-case minuscules (ex: sap-adt-mcp)
+    {% endif %}
+
+project_slug:
+  type: str
+  help: "Nom du package Python (snake_case, auto-dérivé — modifier si besoin)"
+  default: "{{ project_name | replace('-', '_') }}"
+
+project_description:
+  type: str
+  help: "Description courte du projet (une ligne)"
+
+project_type:
+  type: str
+  help: "Type de projet (conditionne les dépendances, Dockerfile, CLAUDE.md)"
+  choices:
+    - mcp-server
+    - abap-project
+    - fabric-pipeline
+  default: mcp-server
+
+python_version:
+  type: str
+  help: "Version Python"
+  default: "3.12"
+
+author_name:
+  type: str
+  help: "Nom de l'auteur / organisation"
+  default: "SYNKRONIC"
+
+author_email:
+  type: str
+  help: "Email de l'auteur"
+  default: "jeanbaptiste.mack@outlook.com"
+
+github_org:
+  type: str
+  help: "Organisation ou username GitHub"
+  default: "jeanbaptistemack"
+
+workspace_color:
+  type: str
+  help: "Couleur de la barre d'activité VS Code (hex, ex: #6B7280)"
+  default: >-
+    {%- if project_type == "mcp-server" %}#1E3A5F
+    {%- elif project_type == "abap-project" %}#3D1A00
+    {%- elif project_type == "fabric-pipeline" %}#0E2A1A
+    {%- endif %}

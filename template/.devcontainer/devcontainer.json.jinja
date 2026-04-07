@@ -1,6 +1,6 @@
 {
-  "name": "sap-template-devcontainer",
-  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "name": "{{ project_name }}-devcontainer",
+  "image": "mcr.microsoft.com/devcontainers/python:{{ python_version }}",
 
   "mounts": [
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind",
@@ -27,7 +27,7 @@
   },
 
   "onCreateCommand": {
-    "git-config": "git config --global --add safe.directory ${containerWorkspaceFolder} && git config --global user.email 'jeanbaptiste.mack@outlook.com' && git config --global user.name 'jeanbaptistemack'",
+    "git-config": "git config --global --add safe.directory ${containerWorkspaceFolder} && git config --global user.email '{{ author_email }}' && git config --global user.name '{{ author_name }}'",
     "claude-dirs": "mkdir -p /home/vscode/.claude/tmp /home/vscode/.claude/logs /tmp/claude-code"
   },
 

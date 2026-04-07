@@ -1,0 +1,53 @@
+# =============================================================================
+# {{ project_name }}
+# Build : docker build -t {{ project_name }} .
+{%- if project_type == "mcp-server" %}
+# Run   : docker run --rm --env-file .env {{ project_name }}
+{%- elif project_type == "fabric-pipeline" %}
+# Run   : docker run --rm --env-file .env {{ project_name }}
+{%- elif project_type == "abap-project" %}
+# Run   : docker run --rm --env-file .env {{ project_name }}
+{%- endif %}
+# =============================================================================
+
+# --- Stage builder : résolution des dépendances ---
+FROM python:{{ python_version }}-slim AS builder
+
+# Installer uv depuis l'image officielle
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+
+# Copier uniquement ce qui est nécessaire à la résolution des dépendances
+COPY pyproject.toml ./
+COPY src/ src/
+
+# Installer uniquement les dépendances de production avec bytecode compilé
+RUN uv sync --no-dev --compile-bytecode
+
+# --- Stage runtime : image finale allégée ---
+FROM python:{{ python_version }}-slim AS runtime
+
+WORKDIR /app
+
+# Récupérer le virtualenv depuis le builder
+COPY --from=builder /app/.venv /app/.venv
+
+# Copier les sources
+COPY src/ src/
+
+# Activer le virtualenv
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+{%- if project_type == "mcp-server" %}
+
+# MCP : transport stdio par défaut, HTTP sur le port 8000
+EXPOSE 8000
+{%- endif %}
+
+# Utilisateur non-root
+RUN useradd -m -u 1000 appuser
+USER appuser
+
+CMD ["python", "-m", "{{ project_slug }}"]

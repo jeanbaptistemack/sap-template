@@ -1,0 +1,34 @@
+"""Configuration Pydantic-settings pour {{ project_name }}."""
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+{%- if project_type == "mcp-server" or project_type == "abap-project" %}
+
+    # Connexion SAP
+    sap_url: str = "https://localhost:44300"
+    sap_user: str = "DEVELOPER"
+    sap_password: str = ""
+    sap_client: str = "100"
+    sap_language: str = "EN"
+{%- endif %}
+{%- if project_type == "fabric-pipeline" %}
+
+    # Azure / Fabric
+    azure_tenant_id: str = ""
+    azure_client_id: str = ""
+    azure_client_secret: str = ""
+    onelake_workspace_id: str = ""
+    onelake_lakehouse_id: str = ""
+{%- endif %}
+{%- if project_type == "mcp-server" %}
+
+    # Serveur MCP
+    mcp_host: str = "0.0.0.0"
+    mcp_port: int = 8000
+{%- endif %}
+
+
+settings = Settings()

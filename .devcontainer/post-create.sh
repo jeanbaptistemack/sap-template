@@ -37,9 +37,50 @@ export PATH="$HOME/.local/bin:$HOME/.claude/bin:$PATH"
 echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$PATH"' >> ~/.bashrc
 
 # =============================================================================
-# 2. npm install (if package.json exists)
+# 2. uv + copier — Python toolchain
 # =============================================================================
-echo "[2/5] Project dependencies..."
+echo "[2/6] uv + copier..."
+if command -v uv &>/dev/null; then
+  echo "  uv found at $(which uv)"
+else
+  echo "  installing uv..."
+  curl -LsSf https://astral.sh/uv/install.sh | sh 2>/dev/null && \
+    echo "  uv installed" || echo "  WARNING: uv install failed"
+fi
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+
+if command -v copier &>/dev/null; then
+  echo "  copier found at $(which copier)"
+else
+  echo "  installing copier..."
+  pip install copier --quiet 2>/dev/null && \
+    echo "  copier installed" || echo "  WARNING: copier install failed"
+fi
+
+# =============================================================================
+# 3. GitHub CLI (gh) — install if not already present via feature
+# =============================================================================
+echo "[2/5] GitHub CLI..."
+if command -v gh &>/dev/null; then
+  echo "  gh found at $(which gh) — $(gh --version | head -1)"
+else
+  echo "  installing gh..."
+  (type -p wget >/dev/null || sudo apt-get install wget -y -qq) && \
+  sudo mkdir -p -m 755 /etc/apt/keyrings && \
+  wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
+    sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null && \
+  sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | \
+    sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null && \
+  sudo apt-get update -qq && sudo apt-get install gh -y -qq && \
+  echo "  gh installed" || echo "  WARNING: gh install failed"
+fi
+
+# =============================================================================
+# 3. npm install (if package.json exists)
+# =============================================================================
+echo "[3/6] Project dependencies..."
 if [ -f "$WORKSPACE_DIR/package.json" ]; then
   npm install --silent 2>/dev/null && echo "  npm install done" || echo "  WARNING: npm install failed"
 else
@@ -49,7 +90,7 @@ fi
 # =============================================================================
 # 3. Git submodules (no-op if no .gitmodules)
 # =============================================================================
-echo "[3/5] Git submodules..."
+echo "[4/6] Git submodules..."
 if [ -f "$WORKSPACE_DIR/.gitmodules" ]; then
   git submodule update --init --recursive 2>/dev/null && \
     echo "  submodules initialized" || echo "  WARNING: submodule init failed"
@@ -60,7 +101,7 @@ fi
 # =============================================================================
 # 4. npm install in submodules (if any have package.json)
 # =============================================================================
-echo "[4/5] Submodule dependencies..."
+echo "[5/6] Submodule dependencies..."
 if [ -f "$WORKSPACE_DIR/.gitmodules" ]; then
   git submodule foreach --quiet \
     'if [ -f package.json ]; then echo "  Building $name..."; npm install --silent && npm run build 2>/dev/null && echo "    OK" || echo "    WARNING: build failed"; fi' \
@@ -74,7 +115,7 @@ fi
 # Uncomment to enable: clones marianfoo/mcp-sap-docs, indexes ABAP documentation
 # locally via BM25 + embeddings (sqlite). Requires Node.js (feature already added).
 # =============================================================================
-# echo "[5/5] MCP SAP Docs (ABAP)..."
+# echo "[6/6] MCP SAP Docs (ABAP)..."
 # MCP_SAP_DOCS="/opt/mcp-sap-docs"
 #
 # if [ ! -d "$MCP_SAP_DOCS" ]; then

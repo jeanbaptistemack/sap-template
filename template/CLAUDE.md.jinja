@@ -1,0 +1,146 @@
+# {{ project_name }} — Instructions Claude Code (SYNKRONIC)
+
+## Contexte Projet
+
+**Nom** : `{{ project_name }}`
+**Type** : `{{ project_type }}`
+**Description** : {{ project_description }}
+**Stack** : Python {{ python_version }}, uv, ruff, pytest
+
+## Architecture
+{%- if project_type == "mcp-server" %}
+
+Serveur MCP (Model Context Protocol) Python exposant des outils SAP/Azure à Claude Code.
+
+```
+src/{{ project_slug }}/
+├── __init__.py       — version et exports publics
+├── __main__.py       — point d'entrée `python -m {{ project_slug }}`
+├── server.py         — FastMCP app + enregistrement des tools
+├── config.py         — pydantic-settings (depuis .env)
+└── tools/            — modules de tools groupés par domaine (à créer)
+```
+
+### Pattern MCP Tool
+
+```python
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("{{ project_name }}")
+
+@mcp.tool()
+async def mon_tool(param: str) -> str:
+    """Docstring = description visible dans Claude."""
+    ...
+```
+
+### Lancement local
+
+```bash
+# Transport stdio (défaut, pour .mcp.json)
+uv run python -m {{ project_slug }}
+
+# Avec l'inspector MCP (debug)
+npx @modelcontextprotocol/inspector uv run python -m {{ project_slug }}
+```
+
+### Configuration .mcp.json
+
+```json
+{
+  "mcpServers": {
+    "{{ project_name }}": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "{{ project_slug }}"],
+      "env": { "SAP_URL": "...", "SAP_PASSWORD": "..." }
+    }
+  }
+}
+```
+{%- elif project_type == "abap-project" %}
+
+Projet d'extraction/interaction ABAP sur SAP S/4HANA via ADT REST et/ou RFC.
+
+```
+src/{{ project_slug }}/
+├── __init__.py
+├── __main__.py       — point d'entrée `python -m {{ project_slug }}`
+├── server.py         — orchestration principale
+├── config.py         — pydantic-settings (SAP_URL, SAP_USER, etc.)
+├── adt_client.py     — Client ADT REST (lock/read/write/activate) (à créer)
+└── rfc_client.py     — Appels RFC via pyrfc (à créer)
+```
+
+### Variables d'environnement requises
+
+```env
+SAP_URL=https://s4hdev.duckdns.org:44300
+SAP_USER=DEVELOPER
+SAP_PASSWORD=...
+SAP_CLIENT=100
+SAP_LANGUAGE=EN
+```
+{%- elif project_type == "fabric-pipeline" %}
+
+Pipeline Python SAP → Microsoft Fabric (OneLake / Lakehouses).
+
+```
+src/{{ project_slug }}/
+├── __init__.py
+├── __main__.py       — point d'entrée `python -m {{ project_slug }}`
+├── server.py         — orchestration principale
+├── config.py         — pydantic-settings (AZURE_*, SAP_*)
+├── extractor.py      — Extraction depuis SAP (ADT/RFC/CSV) (à créer)
+├── loader.py         — Upload OneLake via azure-storage-file-datalake (à créer)
+└── transformer.py    — Transformations pandas Bronze→Silver (à créer)
+```
+
+### Architecture Lakehouse (Médaillon)
+
+```
+SAP_Bronze (schema-enabled)              Domain_Lakehouse (schema-enabled)
+  dbo.bronze_zcds_*  ◄──── schema shortcut ────  bronze.*
+                                                   silver.* (vues calculées)
+                                                   gold.*   (agrégats métier)
+```
+
+### Convention Hashkeys
+
+- PK : `_pk_hkey_{fields}` (SHA256 sur les champs clés)
+- FK : `_fk_hkey_{business_keys}`
+- Jointures : `fact._fk_hkey_{bk} = dim._pk_hkey_{bk}`
+{%- endif %}
+
+## Conventions SYNKRONIC
+
+### Labels CDS SAP (français)
+Les CDS views générées dans ZEXTRACT utilisent des labels en **français** :
+```abap
+@EndUserText.label: 'Document de vente'  -- pas 'Sales Document'
+@EndUserText.label: 'Poste document'     -- pas 'Document Item'
+```
+
+### Naming
+- Packages ABAP cibles : `ZEXTRACT` (extraction) ou `ZMCP` (serveurs MCP)
+- CDS views : `ZCDS_EXT_{MODULE}_{OBJET}` (delta), `ZCDS_CFG_` (config), `ZCDS_CHG_` (changelog)
+- Tables shadow CDC : `ZEXT_{NOM}_SNAP` (snapshot hashkeys)
+
+### Règles absolues
+1. Ne jamais modifier des objets SAP hors des packages `ZEXTRACT` / `ZMCP`
+2. Ne jamais committer `.env`, `.mcp.json`, `*.pem`, `ssh_appliance.pem`
+3. Activer TOUJOURS après `setObjectSource` (MCP ADT)
+{%- if project_type == "mcp-server" %}
+4. Un tool MCP = une responsabilité. Pas de tools "fourre-tout"
+5. Les tools retournent du texte structuré (markdown tables, JSON) lisible par Claude
+{%- endif %}
+
+## Commandes Essentielles
+
+```bash
+make setup      # uv sync --all-extras
+make dev        # lancer le projet en mode dev
+make test       # pytest + coverage
+make lint       # ruff check (sans modification)
+make format     # ruff check --fix + ruff format
+make ci         # lint + typecheck + test (utilisé en CI)
+```

@@ -1,0 +1,78 @@
+# {{ project_name }}
+
+{{ project_description }}
+
+## Prérequis
+
+- [uv](https://docs.astral.sh/uv/) — gestionnaire de packages Python
+- Python {{ python_version }}+
+
+## Installation
+
+```bash
+# Installer uv si absent
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Installer toutes les dépendances
+make setup
+
+# Copier et renseigner les variables d'environnement
+cp .env.example .env
+```
+
+## Développement
+
+```bash
+make dev        # lancer le projet
+make test       # tests avec coverage
+make lint       # vérifier le linting
+make format     # formatter automatiquement
+make ci         # lint + typecheck + test
+```
+{%- if project_type == "mcp-server" %}
+
+## Serveur MCP
+
+Ce projet est un **serveur MCP Python** exposant des outils SAP à Claude Code via le Model Context Protocol.
+
+### Lancement
+
+```bash
+# Transport stdio (pour .mcp.json)
+uv run python -m {{ project_slug }}
+
+# Avec l'inspector MCP
+npx @modelcontextprotocol/inspector uv run python -m {{ project_slug }}
+```
+
+### Intégration Claude Code (`.mcp.json`)
+
+```json
+{
+  "mcpServers": {
+    "{{ project_name }}": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "{{ project_slug }}"]
+    }
+  }
+}
+```
+{%- elif project_type == "abap-project" %}
+
+## Projet ABAP
+
+Ce projet interagit avec SAP S/4HANA via ADT REST et/ou RFC (pyrfc).
+
+Configurer les variables SAP dans `.env` avant le premier lancement.
+{%- elif project_type == "fabric-pipeline" %}
+
+## Pipeline Fabric
+
+Ce projet ingère des données SAP dans Microsoft Fabric / OneLake.
+
+Configurer les variables Azure dans `.env` avant le premier lancement.
+{%- endif %}
+
+## Auteur
+
+[{{ author_name }}](https://github.com/{{ github_org }}/{{ project_name }})

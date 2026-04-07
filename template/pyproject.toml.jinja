@@ -1,0 +1,97 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "{{ project_name }}"
+version = "0.1.0"
+description = "{{ project_description }}"
+readme = "README.md"
+requires-python = ">={{ python_version }}"
+license = { text = "MIT" }
+authors = [
+  { name = "{{ author_name }}", email = "{{ author_email }}" },
+]
+
+dependencies = [
+{%- if project_type == "mcp-server" %}
+  "mcp>=1.4",
+  "pydantic>=2.0",
+  "pydantic-settings>=2.0",
+  "python-dotenv>=1.0",
+{%- elif project_type == "abap-project" %}
+  "pyrfc>=2.8",
+  "pydantic>=2.0",
+  "pydantic-settings>=2.0",
+  "python-dotenv>=1.0",
+  "requests>=2.32",
+{%- elif project_type == "fabric-pipeline" %}
+  "azure-storage-file-datalake>=12.0",
+  "azure-identity>=1.17",
+  "pandas>=2.2",
+  "pydantic>=2.0",
+  "python-dotenv>=1.0",
+{%- endif %}
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+  "pytest-asyncio>=0.23",
+  "ruff>=0.4",
+  "mypy>=1.10",
+{%- if project_type == "mcp-server" %}
+  "pytest-mock>=3.14",
+{%- endif %}
+]
+
+[project.urls]
+Homepage = "https://github.com/{{ github_org }}/{{ project_name }}"
+Repository = "https://github.com/{{ github_org }}/{{ project_name }}.git"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/{{ project_slug }}"]
+
+# --- Ruff ---
+[tool.ruff]
+target-version = "py{{ python_version | replace('.', '') }}"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "F",    # pyflakes
+  "I",    # isort
+  "B",    # flake8-bugbear
+  "C4",   # flake8-comprehensions
+  "UP",   # pyupgrade
+  "RUF",  # ruff-specific
+]
+ignore = ["E501"]  # line length handled by formatter
+
+[tool.ruff.lint.isort]
+known-first-party = ["{{ project_slug }}"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# --- Pytest ---
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--cov={{ project_slug }} --cov-report=term-missing --cov-report=xml"
+
+[tool.coverage.run]
+source = ["src/{{ project_slug }}"]
+omit = ["tests/*"]
+
+# --- Mypy ---
+[tool.mypy]
+python_version = "{{ python_version }}"
+strict = false
+warn_unused_configs = true
+ignore_missing_imports = true

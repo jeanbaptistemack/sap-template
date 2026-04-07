@@ -1,0 +1,19 @@
+"""Tests de base pour {{ project_name }}."""
+
+import pytest
+
+from {{ project_slug }} import __version__
+
+
+def test_version() -> None:
+    assert __version__ == "0.1.0"
+{%- if project_type == "mcp-server" %}
+
+
+@pytest.mark.asyncio
+async def test_healthcheck() -> None:
+    from {{ project_slug }}.server import mcp
+
+    result = await mcp.call_tool("healthcheck", {})
+    assert result is not None
+{%- endif %}

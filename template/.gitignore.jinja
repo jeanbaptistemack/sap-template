@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+MANIFEST
+
+# Environnements virtuels (uv crée .venv)
+.venv/
+venv/
+ENV/
+
+# Tests
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+
+# Mypy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets & credentials — NE JAMAIS COMMITTER
+.env
+.env.local
+.mcp.json
+*.pem
+*.key
+ssh_appliance.pem
+gcp-sa-key.json
+
+# Copier answers (contient la config du projet généré, à committer)
+# .copier-answers.yml  ← versionné intentionnellement
+
+# Logs
+*.log
+logs/
