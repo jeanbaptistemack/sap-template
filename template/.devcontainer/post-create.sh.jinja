@@ -14,7 +14,14 @@ echo "============================================"
 # =============================================================================
 # 1. uv + copier
 # =============================================================================
-echo "[1/4] Claude auth restore..."
+echo "[1/5] Git LFS..."
+if command -v git-lfs &>/dev/null; then
+  git lfs install --local 2>/dev/null && echo "  git lfs installed" || echo "  WARNING: git lfs install failed"
+else
+  echo "  git-lfs not found — install via feature"
+fi
+
+echo "[2/5] Claude auth restore..."
 if [ ! -f "$HOME/.claude.json" ]; then
   BACKUP=$(ls "$HOME/.claude/backups/.claude.json.backup."* 2>/dev/null | sort | tail -1)
   if [ -n "$BACKUP" ]; then
@@ -27,7 +34,7 @@ else
   echo "  ~/.claude.json already present"
 fi
 
-echo "[3/4] uv + copier..."
+echo "[3/5] uv + copier..."
 if command -v uv &>/dev/null; then
   echo "  uv $(uv --version)"
 else
@@ -45,7 +52,7 @@ fi
 # =============================================================================
 # 2. Claude Code CLI
 # =============================================================================
-echo "[4/4] Claude Code CLI..."
+echo "[4/5] Claude Code CLI..."
 if command -v claude &>/dev/null; then
   echo "  claude $(claude --version)"
 else
@@ -59,7 +66,7 @@ echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$PATH"' >> ~/.bashrc
 # =============================================================================
 # 3. Dépendances Python du projet
 # =============================================================================
-echo "[5/5] Python dependencies..."
+echo "[6/6] Python dependencies..."
 if [ -f "$WORKSPACE_DIR/pyproject.toml" ]; then
   uv sync --all-extras 2>/dev/null && echo "  uv sync done" || echo "  WARNING: uv sync failed"
   # Committer uv.lock s'il vient d'être généré
@@ -76,7 +83,7 @@ fi
 # =============================================================================
 # 4. Git submodules
 # =============================================================================
-echo "[5/5] Git submodules..."
+echo "[6/6] Git submodules..."
 if [ -f "$WORKSPACE_DIR/.gitmodules" ]; then
   git submodule update --init --recursive 2>/dev/null && echo "  submodules initialized" || echo "  WARNING: failed"
 else
