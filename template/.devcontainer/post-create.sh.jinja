@@ -14,14 +14,23 @@ echo "============================================"
 # =============================================================================
 # 1. uv + copier
 # =============================================================================
-echo "[1/5] Git LFS..."
+echo "[1/6] just (command runner)..."
+if command -v just &>/dev/null; then
+  echo "  just $(just --version)"
+else
+  curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | \
+    sudo bash -s -- --to /usr/local/bin 2>/dev/null && \
+    echo "  just installed" || echo "  WARNING: just install failed"
+fi
+
+echo "[2/6] Git LFS..."
 if command -v git-lfs &>/dev/null; then
   git lfs install --local 2>/dev/null && echo "  git lfs installed" || echo "  WARNING: git lfs install failed"
 else
   echo "  git-lfs not found — install via feature"
 fi
 
-echo "[2/5] Claude auth restore..."
+echo "[3/6] Claude auth restore..."
 if [ ! -f "$HOME/.claude.json" ]; then
   BACKUP=$(ls "$HOME/.claude/backups/.claude.json.backup."* 2>/dev/null | sort | tail -1)
   if [ -n "$BACKUP" ]; then
@@ -34,7 +43,7 @@ else
   echo "  ~/.claude.json already present"
 fi
 
-echo "[3/5] uv + copier..."
+echo "[4/6] uv + copier..."
 if command -v uv &>/dev/null; then
   echo "  uv $(uv --version)"
 else
@@ -52,7 +61,7 @@ fi
 # =============================================================================
 # 2. Claude Code CLI
 # =============================================================================
-echo "[4/5] Claude Code CLI..."
+echo "[5/6] Claude Code CLI..."
 if command -v claude &>/dev/null; then
   echo "  claude $(claude --version)"
 else
