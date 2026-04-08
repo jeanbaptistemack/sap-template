@@ -1,0 +1,40 @@
+# {{ project_name }}
+# Prérequis : uv (https://docs.astral.sh/uv/)
+
+# Lister les recettes disponibles
+default:
+    @just --list
+
+# Installer toutes les dépendances (y compris dev)
+setup:
+    uv sync --all-extras
+
+# Lancer le projet en mode développement
+dev:
+    uv run python -m {{ project_slug }}
+
+# Lancer les tests avec couverture
+test:
+    uv run pytest
+
+# Vérifier le linting (sans modification)
+lint:
+    uv run ruff check src/ tests/
+    uv run ruff format --check src/ tests/
+
+# Formatter le code automatiquement
+format:
+    uv run ruff check --fix src/ tests/
+    uv run ruff format src/ tests/
+
+# Vérification des types
+typecheck:
+    uv run mypy src/
+
+# CI complète (lint + typecheck + test)
+ci: lint typecheck test
+
+# Nettoyer les artefacts de build
+clean:
+    rm -rf dist/ .coverage coverage.xml htmlcov/ .pytest_cache/ .mypy_cache/ .ruff_cache/
+    find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true

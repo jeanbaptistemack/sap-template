@@ -14,7 +14,7 @@
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Installer toutes les dépendances
-make setup
+just setup
 
 # Copier et renseigner les variables d'environnement
 cp .env.example .env
@@ -23,11 +23,12 @@ cp .env.example .env
 ## Développement
 
 ```bash
-make dev        # lancer le projet
-make test       # tests avec coverage
-make lint       # vérifier le linting
-make format     # formatter automatiquement
-make ci         # lint + typecheck + test
+just dev        # lancer le projet
+just test       # tests avec coverage
+just lint       # vérifier le linting
+just format     # formatter automatiquement
+just ci         # lint + typecheck + test
+just            # lister toutes les recettes
 ```
 {%- if project_type == "mcp-server" %}
 

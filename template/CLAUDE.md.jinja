@@ -137,10 +137,11 @@ Les CDS views générées dans ZEXTRACT utilisent des labels en **français** :
 ## Commandes Essentielles
 
 ```bash
-make setup      # uv sync --all-extras
-make dev        # lancer le projet en mode dev
-make test       # pytest + coverage
-make lint       # ruff check (sans modification)
-make format     # ruff check --fix + ruff format
-make ci         # lint + typecheck + test (utilisé en CI)
+just setup      # uv sync --all-extras
+just dev        # lancer le projet en mode dev
+just test       # pytest + coverage
+just lint       # ruff check (sans modification)
+just format     # ruff check --fix + ruff format
+just ci         # lint + typecheck + test (utilisé en CI)
+just            # lister toutes les recettes
 ```
