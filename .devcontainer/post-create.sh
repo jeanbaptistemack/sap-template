@@ -14,7 +14,7 @@ echo "============================================"
 # =============================================================================
 # 1. Install Claude Code CLI
 # =============================================================================
-echo "[1/5] Installing Claude Code CLI..."
+echo "[1/6] Installing Claude Code CLI..."
 
 # Restore ~/.claude.json from backup BEFORE installer runs (avoids repeated warnings)
 if [ ! -f "$HOME/.claude.json" ]; then
@@ -39,7 +39,7 @@ echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$PATH"' >> ~/.bashrc
 # =============================================================================
 # 2. uv + copier — Python toolchain
 # =============================================================================
-echo "[2/6] uv + copier..."
+echo "[2/6] uv + copier (Python toolchain)..."
 if command -v uv &>/dev/null; then
   echo "  uv found at $(which uv)"
 else
@@ -59,9 +59,9 @@ else
 fi
 
 # =============================================================================
-# 3. GitHub CLI (gh) — install if not already present via feature
+# 3. GitHub CLI
 # =============================================================================
-echo "[2/5] GitHub CLI..."
+echo "[3/6] GitHub CLI..."
 if command -v gh &>/dev/null; then
   echo "  gh found at $(which gh) — $(gh --version | head -1)"
 else
@@ -78,9 +78,9 @@ else
 fi
 
 # =============================================================================
-# 3. npm install (if package.json exists)
+# 4. npm install (if package.json exists)
 # =============================================================================
-echo "[3/6] Project dependencies..."
+echo "[4/6] Project dependencies..."
 if [ -f "$WORKSPACE_DIR/package.json" ]; then
   npm install --silent 2>/dev/null && echo "  npm install done" || echo "  WARNING: npm install failed"
 else
@@ -88,9 +88,9 @@ else
 fi
 
 # =============================================================================
-# 3. Git submodules (no-op if no .gitmodules)
+# 5. Git submodules (no-op if no .gitmodules)
 # =============================================================================
-echo "[4/6] Git submodules..."
+echo "[5/6] Git submodules..."
 if [ -f "$WORKSPACE_DIR/.gitmodules" ]; then
   git submodule update --init --recursive 2>/dev/null && \
     echo "  submodules initialized" || echo "  WARNING: submodule init failed"
@@ -99,9 +99,9 @@ else
 fi
 
 # =============================================================================
-# 4. npm install in submodules (if any have package.json)
+# 6. npm install + build in submodules (if any have package.json)
 # =============================================================================
-echo "[5/6] Submodule dependencies..."
+echo "[6/6] Submodule dependencies..."
 if [ -f "$WORKSPACE_DIR/.gitmodules" ]; then
   git submodule foreach --quiet \
     'if [ -f package.json ]; then echo "  Building $name..."; npm install --silent && npm run build 2>/dev/null && echo "    OK" || echo "    WARNING: build failed"; fi' \
