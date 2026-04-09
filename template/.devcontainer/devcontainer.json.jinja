@@ -38,7 +38,15 @@
 
   "remoteEnv": {
     "PATH": "${containerEnv:HOME}/.local/bin:${containerEnv:HOME}/.claude/bin:${containerEnv:PATH}",
-    "TMPDIR": "/tmp/claude-code"
+    "TMPDIR": "/tmp/claude-code",
+
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-6[1m]",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5-20251001",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-6[1m]",
+    "CLAUDE_CODE_EFFORT_LEVEL": "max",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "128000",
+    "CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY": "20"
   },
 
   "containerEnv": {
