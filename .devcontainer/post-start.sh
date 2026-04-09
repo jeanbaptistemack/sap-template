@@ -101,26 +101,16 @@ else
 fi
 
 # =============================================================================
-# 8. MCP SAP Docs — pull updates + rebuild index (background)
-# Uncomment to enable: pulls latest SAP doc repos + rebuilds sqlite index.
-# Runs in background so the container is available immediately.
-# Requires step 5 in post-create.sh to be enabled first.
+# Project-specific checks (not managed by template — safe from template updates)
 # =============================================================================
-# echo "[7/7] MCP SAP Docs update (background)..."
-# MCP_SAP_DOCS="/opt/mcp-sap-docs"
-#
-# if [ -d "$MCP_SAP_DOCS" ]; then
-#   (
-#     cd "$MCP_SAP_DOCS"
-#     git submodule update --remote --merge --quiet 2>/dev/null && \
-#       MCP_VARIANT=abap npm run build --silent 2>/dev/null && \
-#       echo "[mcp-sap-docs] index updated" >> /tmp/mcp-sap-docs.log || \
-#       echo "[mcp-sap-docs] update failed" >> /tmp/mcp-sap-docs.log
-#   ) &
-#   echo "  running in background (log: /tmp/mcp-sap-docs.log)"
-# else
-#   echo "  not installed — run Rebuild Container to install"
-# fi
+PROJECT_POST_START="$WORKSPACE_DIR/.devcontainer/post-start-project.sh"
+if [ -f "$PROJECT_POST_START" ]; then
+  echo ""
+  echo "--- Project-specific post-start ---"
+  bash "$PROJECT_POST_START" "$WORKSPACE_DIR"
+else
+  echo "  (no post-start-project.sh — skipping)"
+fi
 
 echo ""
 echo "============================================"

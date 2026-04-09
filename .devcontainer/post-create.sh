@@ -111,27 +111,16 @@ else
 fi
 
 # =============================================================================
-# 5. MCP SAP Docs (ABAP variant) — initial install
-# Uncomment to enable: clones marianfoo/mcp-sap-docs, indexes ABAP documentation
-# locally via BM25 + embeddings (sqlite). Requires Node.js (feature already added).
+# Project-specific setup (not managed by template — safe from template updates)
 # =============================================================================
-# echo "[6/6] MCP SAP Docs (ABAP)..."
-# MCP_SAP_DOCS="/opt/mcp-sap-docs"
-#
-# if [ ! -d "$MCP_SAP_DOCS" ]; then
-#   sudo git clone https://github.com/marianfoo/mcp-sap-docs.git "$MCP_SAP_DOCS" 2>/dev/null && \
-#     sudo chown -R "$(whoami):$(whoami)" "$MCP_SAP_DOCS" || \
-#     { echo "  WARNING: clone failed"; exit 0; }
-#   cd "$MCP_SAP_DOCS"
-#   echo "abap" > .mcp-variant
-#   npm ci --silent 2>/dev/null || echo "  WARNING: npm ci failed"
-#   MCP_VARIANT=abap npm run setup 2>/dev/null || echo "  WARNING: setup failed"
-#   MCP_VARIANT=abap npm run build 2>/dev/null && \
-#     echo "  mcp-sap-docs installed and indexed" || echo "  WARNING: build failed"
-#   cd "$WORKSPACE_DIR"
-# else
-#   echo "  already installed at $MCP_SAP_DOCS"
-# fi
+PROJECT_POST_CREATE="$WORKSPACE_DIR/.devcontainer/post-create-project.sh"
+if [ -f "$PROJECT_POST_CREATE" ]; then
+  echo ""
+  echo "--- Project-specific post-create ---"
+  bash "$PROJECT_POST_CREATE" "$WORKSPACE_DIR"
+else
+  echo "  (no post-create-project.sh — skipping)"
+fi
 
 echo ""
 echo "============================================"
