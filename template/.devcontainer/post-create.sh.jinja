@@ -14,7 +14,7 @@ echo "============================================"
 # =============================================================================
 # 1. uv + copier
 # =============================================================================
-echo "[1/6] just (command runner)..."
+echo "[1/7] just (command runner)..."
 if command -v just &>/dev/null; then
   echo "  just $(just --version)"
 else
@@ -23,14 +23,14 @@ else
     echo "  just installed" || echo "  WARNING: just install failed"
 fi
 
-echo "[2/6] Git LFS..."
+echo "[2/7] Git LFS..."
 if command -v git-lfs &>/dev/null; then
   git lfs install --local 2>/dev/null && echo "  git lfs installed" || echo "  WARNING: git lfs install failed"
 else
   echo "  git-lfs not found — install via feature"
 fi
 
-echo "[3/6] Claude auth restore..."
+echo "[3/7] Claude auth restore..."
 if [ ! -f "$HOME/.claude.json" ]; then
   BACKUP=$(ls "$HOME/.claude/backups/.claude.json.backup."* 2>/dev/null | sort | tail -1)
   if [ -n "$BACKUP" ]; then
@@ -43,7 +43,7 @@ else
   echo "  ~/.claude.json already present"
 fi
 
-echo "[4/6] uv + copier..."
+echo "[4/7] uv + copier..."
 if command -v uv &>/dev/null; then
   echo "  uv $(uv --version)"
 else
@@ -61,7 +61,7 @@ fi
 # =============================================================================
 # 2. Claude Code CLI
 # =============================================================================
-echo "[5/6] Claude Code CLI..."
+echo "[5/7] Claude Code CLI..."
 if command -v claude &>/dev/null; then
   echo "  claude $(claude --version)"
 else
@@ -73,9 +73,9 @@ export PATH="$HOME/.local/bin:$HOME/.claude/bin:$PATH"
 echo 'export PATH="$HOME/.local/bin:$HOME/.claude/bin:$PATH"' >> ~/.bashrc
 
 # =============================================================================
-# 3. Dépendances Python du projet
+# 6. Dépendances Python du projet
 # =============================================================================
-echo "[6/6] Python dependencies..."
+echo "[6/7] Python dependencies..."
 if [ -f "$WORKSPACE_DIR/pyproject.toml" ]; then
   uv sync --all-extras 2>/dev/null && echo "  uv sync done" || echo "  WARNING: uv sync failed"
   # Committer uv.lock s'il vient d'être généré
@@ -90,13 +90,25 @@ else
 fi
 
 # =============================================================================
-# 4. Git submodules
+# 7. Git submodules
 # =============================================================================
-echo "[6/6] Git submodules..."
+echo "[7/7] Git submodules..."
 if [ -f "$WORKSPACE_DIR/.gitmodules" ]; then
   git submodule update --init --recursive 2>/dev/null && echo "  submodules initialized" || echo "  WARNING: failed"
 else
   echo "  no submodules — skipping"
+fi
+
+# =============================================================================
+# Project-specific setup (not managed by template — safe from copier update)
+# =============================================================================
+PROJECT_POST_CREATE="$WORKSPACE_DIR/.devcontainer/post-create-project.sh"
+if [ -f "$PROJECT_POST_CREATE" ]; then
+  echo ""
+  echo "--- Project-specific post-create ---"
+  bash "$PROJECT_POST_CREATE" "$WORKSPACE_DIR"
+else
+  echo "  (no post-create-project.sh — see post-create-project.example.sh)"
 fi
 
 echo ""

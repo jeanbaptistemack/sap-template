@@ -35,6 +35,18 @@ else
   echo "  .env not found — copy from .env.example if needed"
 fi
 
+# =============================================================================
+# Project-specific checks (not managed by template — safe from copier update)
+# =============================================================================
+PROJECT_POST_START="$WORKSPACE_DIR/.devcontainer/post-start-project.sh"
+if [ -f "$PROJECT_POST_START" ]; then
+  echo ""
+  echo "--- Project-specific post-start ---"
+  bash "$PROJECT_POST_START" "$WORKSPACE_DIR"
+else
+  echo "  (no post-start-project.sh — see post-start-project.example.sh)"
+fi
+
 echo ""
 echo "============================================"
 echo "  Post-start complete!"
