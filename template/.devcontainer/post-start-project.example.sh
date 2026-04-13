@@ -8,21 +8,35 @@
 WORKSPACE_DIR="${1:-$(pwd)}"
 
 # =============================================================================
-# MCP SAP Docs — pull latest SAP doc repos + rebuild index (background)
-# Runs in background so the container is available immediately.
+# Helper: pull + rebuild a Node.js MCP server (background)
 # =============================================================================
-echo "[project] MCP SAP Docs update (background)..."
-MCP_SAP_DOCS="/opt/mcp-sap-docs"
+update_mcp_server() {
+  local NAME="$1"
+  local DEST="/opt/$NAME"
+  local LOG="/tmp/$NAME.log"
 
-if [ -d "$MCP_SAP_DOCS" ]; then
-  (
-    cd "$MCP_SAP_DOCS"
-    git submodule update --remote --merge --quiet 2>/dev/null && \
-      MCP_VARIANT=abap npm run build --silent 2>/dev/null && \
-      echo "[$(date -Iseconds)] mcp-sap-docs index updated" >> /tmp/mcp-sap-docs.log || \
-      echo "[$(date -Iseconds)] mcp-sap-docs update failed" >> /tmp/mcp-sap-docs.log
-  ) &
-  echo "  running in background (log: /tmp/mcp-sap-docs.log)"
-else
-  echo "  not installed — run Rebuild Container to install"
-fi
+  echo "[project] $NAME update (background)..."
+  if [ -d "$DEST" ]; then
+    (
+      cd "$DEST"
+      git pull --quiet 2>/dev/null && \
+        npm ci --silent 2>/dev/null && \
+        npm run build --silent 2>/dev/null && \
+        echo "[$(date -Iseconds)] $NAME updated" >> "$LOG" || \
+        echo "[$(date -Iseconds)] $NAME update failed" >> "$LOG"
+    ) &
+    echo "  running in background (log: $LOG)"
+  else
+    echo "  not installed — run Rebuild Container to install"
+  fi
+}
+
+# =============================================================================
+# SAP ADT MCP
+# =============================================================================
+update_mcp_server "sap-adt-mcp"
+
+# =============================================================================
+# SAP GUI MCP
+# =============================================================================
+update_mcp_server "sap-gui-mcp"

@@ -8,24 +8,35 @@
 WORKSPACE_DIR="${1:-$(pwd)}"
 
 # =============================================================================
-# MCP SAP Docs (ABAP variant) — initial install
-# Clones marianfoo/mcp-sap-docs, indexes ABAP documentation locally
-# via BM25 + embeddings (sqlite). Requires Node.js feature in devcontainer.json.
+# Helper: clone + build a Node.js MCP server into /opt/
 # =============================================================================
-echo "[project] MCP SAP Docs (ABAP) install..."
-MCP_SAP_DOCS="/opt/mcp-sap-docs"
+install_mcp_server() {
+  local NAME="$1"
+  local REPO="$2"
+  local DEST="/opt/$NAME"
 
-if [ ! -d "$MCP_SAP_DOCS" ]; then
-  sudo git clone https://github.com/marianfoo/mcp-sap-docs.git "$MCP_SAP_DOCS" 2>/dev/null && \
-    sudo chown -R "$(whoami):$(whoami)" "$MCP_SAP_DOCS" || \
-    { echo "  WARNING: clone failed"; return 0 2>/dev/null || exit 0; }
-  cd "$MCP_SAP_DOCS"
-  echo "abap" > .mcp-variant
-  npm ci --silent 2>/dev/null || echo "  WARNING: npm ci failed"
-  MCP_VARIANT=abap npm run setup 2>/dev/null || echo "  WARNING: setup failed"
-  MCP_VARIANT=abap npm run build 2>/dev/null && \
-    echo "  mcp-sap-docs installed and indexed" || echo "  WARNING: build failed"
-  cd "$WORKSPACE_DIR"
-else
-  echo "  already installed at $MCP_SAP_DOCS"
-fi
+  echo "[project] $NAME install..."
+  if [ ! -d "$DEST" ]; then
+    sudo git clone "$REPO" "$DEST" 2>/dev/null && \
+      sudo chown -R "$(whoami):$(whoami)" "$DEST" || \
+      { echo "  WARNING: clone failed for $NAME"; return 0; }
+    cd "$DEST"
+    npm ci --silent 2>/dev/null || npm install --silent 2>/dev/null || \
+      echo "  WARNING: npm install failed for $NAME"
+    npm run build 2>/dev/null && \
+      echo "  $NAME installed" || echo "  WARNING: build failed for $NAME"
+    cd "$WORKSPACE_DIR"
+  else
+    echo "  already installed at $DEST"
+  fi
+}
+
+# =============================================================================
+# SAP ADT MCP — ABAP Development Tools (ADT REST + RFC)
+# =============================================================================
+install_mcp_server "sap-adt-mcp" "https://github.com/jeanbaptistemack/sap-adt-mcp.git"
+
+# =============================================================================
+# SAP GUI MCP — SAP GUI automation
+# =============================================================================
+install_mcp_server "sap-gui-mcp" "https://github.com/jeanbaptistemack/sap-gui-mcp.git"

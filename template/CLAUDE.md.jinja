@@ -111,6 +111,17 @@ SAP_Bronze (schema-enabled)              Domain_Lakehouse (schema-enabled)
 - Jointures : `fact._fk_hkey_{bk} = dim._pk_hkey_{bk}`
 {%- endif %}
 
+## MCP Servers SAP (infrastructure commune)
+
+Deux serveurs MCP SAP sont disponibles dans `/opt/` (installés par `post-create-project.sh`) :
+
+| Serveur | Emplacement | Usage |
+|---------|-------------|-------|
+| `sap-adt-mcp` | `/opt/sap-adt-mcp` | ADT REST API + RFC — lecture/écriture objets ABAP, activation, transports |
+| `sap-gui-mcp` | `/opt/sap-gui-mcp` | SAP GUI automation — transactions, navigation écran, tables |
+
+Configuration : copier `.mcp.json.example` vers `.mcp.json` et renseigner les credentials SAP.
+
 ## Conventions SYNKRONIC
 
 ### Labels CDS SAP (français)

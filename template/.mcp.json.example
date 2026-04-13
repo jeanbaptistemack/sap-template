@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "sap-adt-mcp": {
+      "command": "node",
+      "args": ["/opt/sap-adt-mcp/dist/index.js"],
+      "env": {
+        "SAP_URL": "https://your-sap-host:44300",
+        "SAP_USER": "DEVELOPER",
+        "SAP_PASSWORD": "your-password",
+        "SAP_CLIENT": "100",
+        "SAP_LANGUAGE": "EN",
+        "NODE_TLS_REJECT_UNAUTHORIZED": "0"
+      }
+    },
+    "sap-gui-mcp": {
+      "command": "node",
+      "args": ["/opt/sap-gui-mcp/dist/index.js"],
+      "env": {
+        "SAP_URL": "https://your-sap-host:44300",
+        "SAP_USER": "DEVELOPER",
+        "SAP_PASSWORD": "your-password",
+        "SAP_CLIENT": "100"
+      }
+    }
+  }
+}
