@@ -7,6 +7,11 @@
 
 WORKSPACE_DIR="${1:-$(pwd)}"
 
+# Source .env for GITHUB_PERSONAL_ACCESS_TOKEN (needed to clone private repos)
+if [ -f "$WORKSPACE_DIR/.env" ]; then
+  set -a; source "$WORKSPACE_DIR/.env"; set +a
+fi
+
 # =============================================================================
 # Helper: clone + build a Node.js MCP server into /opt/
 # =============================================================================
@@ -17,8 +22,14 @@ install_mcp_server() {
 
   echo "[project] $NAME install..."
   if [ ! -d "$DEST" ]; then
-    sudo git clone "$REPO" "$DEST" 2>/dev/null && \
-      sudo chown -R "$(whoami):$(whoami)" "$DEST" || \
+    # Inject GitHub token into URL for private repos
+    local CLONE_URL="$REPO"
+    if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
+      CLONE_URL="${REPO/https:\/\/github.com/https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com}"
+    fi
+
+    sudo mkdir -p "$DEST" && sudo chown -R "$(whoami):$(whoami)" "$DEST"
+    git clone "$CLONE_URL" "$DEST" 2>/dev/null || \
       { echo "  WARNING: clone failed for $NAME"; return 0; }
     cd "$DEST"
     npm ci --silent 2>/dev/null || npm install --silent 2>/dev/null || \
