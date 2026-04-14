@@ -13,7 +13,8 @@ if [ -f "$WORKSPACE_DIR/.env" ]; then
 fi
 
 # =============================================================================
-# Helper: clone + build a Node.js MCP server into /opt/
+# Helper: clone + build an MCP server into /opt/
+# Auto-detects project type: Python (pyproject.toml) or Node.js (package.json)
 # =============================================================================
 install_mcp_server() {
   local NAME="$1"
@@ -21,7 +22,7 @@ install_mcp_server() {
   local DEST="/opt/$NAME"
 
   echo "[project] $NAME install..."
-  if [ ! -d "$DEST" ]; then
+  if [ ! -d "$DEST" ] || [ -z "$(ls -A "$DEST" 2>/dev/null)" ]; then
     # Inject GitHub token into URL for private repos
     local CLONE_URL="$REPO"
     if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
@@ -31,15 +32,25 @@ install_mcp_server() {
     sudo mkdir -p "$DEST" && sudo chown -R "$(whoami):$(whoami)" "$DEST"
     git clone "$CLONE_URL" "$DEST" 2>/dev/null || \
       { echo "  WARNING: clone failed for $NAME"; return 0; }
-    cd "$DEST"
+  fi
+
+  cd "$DEST"
+
+  if [ -f "pyproject.toml" ]; then
+    # Python project (uv + hatchling)
+    uv sync --quiet 2>/dev/null && \
+      echo "  $NAME installed (Python)" || echo "  WARNING: uv sync failed for $NAME"
+  elif [ -f "package.json" ]; then
+    # Node.js project
     npm ci --silent 2>/dev/null || npm install --silent 2>/dev/null || \
       echo "  WARNING: npm install failed for $NAME"
     npm run build 2>/dev/null && \
-      echo "  $NAME installed" || echo "  WARNING: build failed for $NAME"
-    cd "$WORKSPACE_DIR"
+      echo "  $NAME installed (Node.js)" || echo "  WARNING: build failed for $NAME"
   else
-    echo "  already installed at $DEST"
+    echo "  WARNING: no pyproject.toml or package.json found for $NAME"
   fi
+
+  cd "$WORKSPACE_DIR"
 }
 
 # =============================================================================

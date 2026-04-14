@@ -13,7 +13,8 @@ if [ -f "$WORKSPACE_DIR/.env" ]; then
 fi
 
 # =============================================================================
-# Helper: pull + rebuild a Node.js MCP server (background)
+# Helper: pull + rebuild an MCP server (background)
+# Auto-detects project type: Python (pyproject.toml) or Node.js (package.json)
 # =============================================================================
 update_mcp_server() {
   local NAME="$1"
@@ -28,11 +29,18 @@ update_mcp_server() {
       if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
         git remote set-url origin "$(git remote get-url origin | sed "s|https://github.com|https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com|")" 2>/dev/null
       fi
-      git pull --quiet 2>/dev/null && \
+      git pull --quiet 2>/dev/null
+
+      if [ -f "pyproject.toml" ]; then
+        uv sync --quiet 2>/dev/null && \
+          echo "[$(date -Iseconds)] $NAME updated (Python)" >> "$LOG" || \
+          echo "[$(date -Iseconds)] $NAME update failed" >> "$LOG"
+      elif [ -f "package.json" ]; then
         npm ci --silent 2>/dev/null && \
-        npm run build --silent 2>/dev/null && \
-        echo "[$(date -Iseconds)] $NAME updated" >> "$LOG" || \
-        echo "[$(date -Iseconds)] $NAME update failed" >> "$LOG"
+          npm run build --silent 2>/dev/null && \
+          echo "[$(date -Iseconds)] $NAME updated (Node.js)" >> "$LOG" || \
+          echo "[$(date -Iseconds)] $NAME update failed" >> "$LOG"
+      fi
     ) &
     echo "  running in background (log: $LOG)"
   else
