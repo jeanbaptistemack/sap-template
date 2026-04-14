@@ -74,15 +74,15 @@ available immediately, logs in `/tmp/sap-adt-mcp.log` and `/tmp/sap-gui-mcp.log`
 
 ### MCP configuration (.mcp.json)
 
-Copy `.mcp.json.example` to `.mcp.json` and fill in your SAP credentials:
+Copy `.mcp.json.example` to `.mcp.json` :
 
 ```bash
 cp .mcp.json.example .mcp.json
-# Edit .mcp.json with your SAP connection details
 ```
 
-`.mcp.json` is gitignored (contains passwords). `.mcp.json.example` is committed
-as a reference.
+Les credentials SAP (SAP_URL, SAP_USER, SAP_PASSWORD, etc.) sont lus automatiquement
+depuis `.env` par pydantic-settings. Le `.mcp.json` ne contient que la config
+structurelle (commandes, chemins). Pas de secrets dedans.
 
 ### Explicit MCP permissions
 

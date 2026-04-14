@@ -22,24 +22,23 @@ devcontainer.json
 | `post-create-project.sh` | **project** | developer (never overwritten by template) |
 | `post-start-project.sh` | **project** | developer (never overwritten by template) |
 | `*.example.sh` | template | reference/documentation |
+| `.mcp.json.example` | template | `copier update` (project root) |
 
 ## Template scripts (generic)
 
 **post-create.sh** (runs once after build):
-1. Install Claude Code CLI (with ~/.claude.json backup restore)
-2. Install uv + copier (Python toolchain)
-3. Install GitHub CLI
-4. `npm install` if `package.json` exists
-5. `git submodule update --init --recursive` if `.gitmodules` exists
-6. `npm install + build` in each submodule
+1. Install just (command runner)
+2. Git LFS setup
+3. Restore Claude auth from backup
+4. Install uv + copier (Python toolchain)
+5. Install Claude Code CLI
+6. Python dependencies (`uv sync`)
+7. Git submodules init
 
 **post-start.sh** (runs on every start):
 1. Claude alias (`--dangerously-skip-permissions` in .bashrc)
-2. Create `.claude.json` project permissions if missing
-3. `chmod 600` on sensitive files (.env, .mcp.json, .claude.json)
-4. Source `.env`
-5. Check AWS credentials
-6. Check Azure SP credentials
+2. `chmod 600` on sensitive files (.env, .mcp.json)
+3. Source `.env`
 
 ## Project-specific scripts
 
@@ -56,15 +55,47 @@ template scripts. They are **never overwritten** by `copier update`.
 
 ## Available examples
 
-### MCP SAP Docs (ABAP variant)
+### SAP MCP Servers (ADT + GUI)
 
 `post-create-project.example.sh` and `post-start-project.example.sh` ship with
-[marianfoo/mcp-sap-docs](https://github.com/marianfoo/mcp-sap-docs) support:
+support for two MCP servers:
 
-- **post-create**: clones the repo, indexes 25 SAP documentation repositories
-  locally via BM25 + semantic embeddings (sqlite) in `/opt/mcp-sap-docs`
-- **post-start**: pulls latest SAP doc repos and rebuilds the index in background
-  (container is available immediately, log in `/tmp/mcp-sap-docs.log`)
+- [sap-adt-mcp](https://github.com/jeanbaptistemack/sap-adt-mcp) — SAP ABAP
+  Development Tools (ADT REST API + RFC). Lecture/ecriture objets ABAP, syntax
+  check, activation, transport management.
+- [sap-gui-mcp](https://github.com/jeanbaptistemack/sap-gui-mcp) — SAP GUI
+  automation. Session management, navigation ecran, execution transactions.
 
-Exposed MCP tools: `search`, `fetch`, `abap_feature_matrix`, `abap_lint`,
-`sap_community_search`.
+**post-create**: clones both repos and builds them (`npm ci && npm run build`)
+into `/opt/sap-adt-mcp` and `/opt/sap-gui-mcp`.
+
+**post-start**: pulls latest changes and rebuilds in background (container
+available immediately, logs in `/tmp/sap-adt-mcp.log` and `/tmp/sap-gui-mcp.log`).
+
+### MCP configuration (.mcp.json)
+
+Copy `.mcp.json.example` to `.mcp.json` :
+
+```bash
+cp .mcp.json.example .mcp.json
+```
+
+Les credentials SAP (SAP_URL, SAP_USER, SAP_PASSWORD, etc.) sont lus automatiquement
+depuis `.env` par pydantic-settings. Le `.mcp.json` ne contient que la config
+structurelle (commandes, chemins). Pas de secrets dedans.
+
+### Explicit MCP permissions
+
+The template uses `bypassPermissions` by default. If you switch to explicit
+permissions in `.claude/settings.json`, add:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "mcp__sap-adt-mcp__*",
+      "mcp__sap-gui-mcp__*"
+    ]
+  }
+}
+```

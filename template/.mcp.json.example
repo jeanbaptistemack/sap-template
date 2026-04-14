@@ -4,11 +4,6 @@
       "command": "uv",
       "args": ["run", "--project", "/opt/sap-adt-mcp", "python", "-m", "sap_adt_mcp"],
       "env": {
-        "SAP_URL": "https://your-sap-host:44300",
-        "SAP_USER": "DEVELOPER",
-        "SAP_PASSWORD": "your-password",
-        "SAP_CLIENT": "100",
-        "SAP_LANGUAGE": "EN",
         "NODE_TLS_REJECT_UNAUTHORIZED": "0"
       }
     },
@@ -16,10 +11,7 @@
       "command": "uv",
       "args": ["run", "--project", "/opt/sap-gui-mcp", "python", "-m", "sap_gui_mcp"],
       "env": {
-        "SAP_URL": "https://your-sap-host:44300",
-        "SAP_USER": "DEVELOPER",
-        "SAP_PASSWORD": "your-password",
-        "SAP_CLIENT": "100"
+        "NODE_TLS_REJECT_UNAUTHORIZED": "0"
       }
     }
   }
