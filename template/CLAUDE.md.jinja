@@ -131,13 +131,13 @@ Les CDS views générées dans ZEXTRACT utilisent des labels en **français** :
 ```
 
 ### Naming
-- Package ABAP principal : `{{ project_name | upper | replace('-', '') }}`
+- Package ABAP principal : `{{ abap_package_name }}`
 - Packages secondaires : `ZEXTRACT` (extraction), `ZMCP` (serveurs MCP)
 - CDS views : `ZCDS_EXT_{MODULE}_{OBJET}` (delta), `ZCDS_CFG_` (config), `ZCDS_CHG_` (changelog)
 - Tables shadow CDC : `ZEXT_{NOM}_SNAP` (snapshot hashkeys)
 
 ### Règles absolues
-1. Ne jamais modifier des objets SAP hors des packages `{{ project_name | upper | replace('-', '') }}` / `ZEXTRACT` / `ZMCP`
+1. Ne jamais modifier des objets SAP hors des packages `{{ abap_package_name }}` / `ZEXTRACT` / `ZMCP`
 2. Ne jamais committer `.env`, `.mcp.json`, `*.pem`, `ssh_appliance.pem`
 3. Activer TOUJOURS après `setObjectSource` (MCP ADT)
 {%- if project_type == "mcp-server" %}

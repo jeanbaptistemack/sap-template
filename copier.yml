@@ -61,6 +61,12 @@ github_org:
   help: "Organisation ou username GitHub"
   default: "jeanbaptistemack"
 
+abap_package_name:
+  type: str
+  help: "Nom du package ABAP cible (ex: ZEXPLORE)"
+  default: "{{ project_name | upper | replace('SAP-', '') | replace('-', '') }}"
+  when: "{{ project_type == 'abap-project' }}"
+
 workspace_color:
   type: str
   help: "Couleur de la barre d'activité VS Code (hex, ex: #6B7280)"
