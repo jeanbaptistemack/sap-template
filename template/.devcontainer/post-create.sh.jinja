@@ -119,6 +119,19 @@ else
   echo "  .mcp.json already exists or no .mcp.json.example"
 fi
 
+{%- if enable_iac %}
+
+# =============================================================================
+# Bicep CLI (not included with Azure CLI devcontainer feature)
+# =============================================================================
+echo "[iac] Bicep CLI..."
+if command -v az &>/dev/null; then
+  az bicep install 2>/dev/null && echo "  bicep $(az bicep version 2>/dev/null | head -1)" || echo "  WARNING: bicep install failed"
+else
+  echo "  az not found — bicep skipped"
+fi
+{%- endif %}
+
 # =============================================================================
 # 9. Project-specific setup (not managed by template — safe from copier update)
 # =============================================================================
