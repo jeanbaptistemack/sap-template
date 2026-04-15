@@ -67,18 +67,17 @@ src/{{ project_slug }}/
 ├── __main__.py       — point d'entrée `python -m {{ project_slug }}`
 ├── server.py         — orchestration principale
 ├── config.py         — pydantic-settings (SAP_URL, SAP_USER, etc.)
-├── adt_client.py     — Client ADT REST (lock/read/write/activate) (à créer)
-└── rfc_client.py     — Appels RFC via pyrfc (à créer)
+└── adt_client.py     — Client ADT REST (lock/read/write/activate) (à créer)
 ```
 
 ### Variables d'environnement requises
 
 ```env
-SAP_URL=https://s4hdev.duckdns.org:44300
+SAP_URL=https://192.168.50.112:44300
 SAP_USER=DEVELOPER
 SAP_PASSWORD=...
 SAP_CLIENT=100
-SAP_LANGUAGE=EN
+SAP_LANGUAGE=FR
 ```
 {%- elif project_type == "fabric-pipeline" %}
 
@@ -120,7 +119,7 @@ Deux serveurs MCP SAP sont disponibles dans `/opt/` (installés par `post-create
 | `sap-adt-mcp` | `/opt/sap-adt-mcp` | ADT REST API + RFC — lecture/écriture objets ABAP, activation, transports |
 | `sap-gui-mcp` | `/opt/sap-gui-mcp` | SAP GUI automation — transactions, navigation écran, tables |
 
-Configuration : copier `.mcp.json.example` vers `.mcp.json` et renseigner les credentials SAP.
+Configuration : `.mcp.json` est créé automatiquement depuis `.mcp.json.example` au premier build. Modifier `.mcp.json` pour ajuster les credentials SAP si nécessaire.
 
 ## Conventions SYNKRONIC
 
@@ -132,12 +131,13 @@ Les CDS views générées dans ZEXTRACT utilisent des labels en **français** :
 ```
 
 ### Naming
-- Packages ABAP cibles : `ZEXTRACT` (extraction) ou `ZMCP` (serveurs MCP)
+- Package ABAP principal : `{{ project_name | upper | replace('-', '') }}`
+- Packages secondaires : `ZEXTRACT` (extraction), `ZMCP` (serveurs MCP)
 - CDS views : `ZCDS_EXT_{MODULE}_{OBJET}` (delta), `ZCDS_CFG_` (config), `ZCDS_CHG_` (changelog)
 - Tables shadow CDC : `ZEXT_{NOM}_SNAP` (snapshot hashkeys)
 
 ### Règles absolues
-1. Ne jamais modifier des objets SAP hors des packages `ZEXTRACT` / `ZMCP`
+1. Ne jamais modifier des objets SAP hors des packages `{{ project_name | upper | replace('-', '') }}` / `ZEXTRACT` / `ZMCP`
 2. Ne jamais committer `.env`, `.mcp.json`, `*.pem`, `ssh_appliance.pem`
 3. Activer TOUJOURS après `setObjectSource` (MCP ADT)
 {%- if project_type == "mcp-server" %}

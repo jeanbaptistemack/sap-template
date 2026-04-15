@@ -8,11 +8,8 @@
       }
     },
     "sap-gui-mcp": {
-      "command": "uv",
-      "args": ["run", "--project", "/opt/sap-gui-mcp", "python", "-m", "sap_gui_mcp"],
-      "env": {
-        "NODE_TLS_REJECT_UNAUTHORIZED": "0"
-      }
+      "type": "sse",
+      "url": "http://192.168.50.119:8001/sse"
     }
   }
 }

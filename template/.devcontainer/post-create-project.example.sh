@@ -58,7 +58,15 @@ install_mcp_server() {
 # =============================================================================
 install_mcp_server "sap-adt-mcp" "https://github.com/jeanbaptistemack/sap-adt-mcp.git"
 
+# Symlink workspace .env into sap-adt-mcp so pydantic-settings finds credentials
+if [ -f "$WORKSPACE_DIR/.env" ] && [ -d "/opt/sap-adt-mcp" ]; then
+  ln -sf "$WORKSPACE_DIR/.env" /opt/sap-adt-mcp/.env
+  echo "  .env symlinked to /opt/sap-adt-mcp/"
+fi
+
 # =============================================================================
-# SAP GUI MCP — SAP GUI automation
+# SAP GUI MCP — SAP GUI automation (SSE remote — runs on Windows VM)
 # =============================================================================
-install_mcp_server "sap-gui-mcp" "https://github.com/jeanbaptistemack/sap-gui-mcp.git"
+# sap-gui-mcp requires Windows (COM/pywin32), configured as SSE in .mcp.json
+# No local install needed — adjust the SSE URL in .mcp.json if needed
+echo "[project] sap-gui-mcp configured as SSE remote (see .mcp.json)"
