@@ -34,11 +34,11 @@ jobs:
 
       - name: Tofu Init
         working-directory: tofu/stacks/${{ "{{" }} matrix.stack {{ "}}" }}
-        run: tofu init -backend-config=../../environments/${{ "{{" }} matrix.environment {{ "}}" }}/backend.hcl
+        run: tofu init -backend-config=../../environments/${{ "{{" }} matrix.environment {{ "}}" }}/backend.hcl -backend-config="key=${{ "{{" }} matrix.stack {{ "}}" }}.tfstate"
 
       - name: Tofu Plan
         working-directory: tofu/stacks/${{ "{{" }} matrix.stack {{ "}}" }}
-        run: tofu plan -var-file=../../environments/${{ "{{" }} matrix.environment {{ "}}" }}/${{ "{{" }} matrix.environment {{ "}}" }}.tfvars -no-color -out=tfplan
+        run: tofu plan -var-file=../../environments/${{ "{{" }} matrix.environment {{ "}}" }}/${{ "{{" }} matrix.environment {{ "}}" }}.tfvars -no-color 2>&1 | tee /tmp/plan-output.txt
         continue-on-error: true
 
       - name: Post Plan to PR
@@ -46,13 +46,12 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           script: |
-            const output = `#### OpenTofu Plan: \`${{ "{{" }} matrix.stack {{ "}}" }}\` / \`${{ "{{" }} matrix.environment {{ "}}" }}\`
-            \`\`\`
-            Plan output will be shown here
-            \`\`\``;
+            const fs = require('fs');
+            const plan = fs.readFileSync('/tmp/plan-output.txt', 'utf8');
+            const truncated = plan.length > 60000 ? plan.substring(0, 60000) + '\n...(truncated)' : plan;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: output
+              body: `## OpenTofu Plan: \`${{ "{{" }} matrix.stack {{ "}}" }}\` / \`${{ "{{" }} matrix.environment {{ "}}" }}\`\n\`\`\`\n${truncated}\n\`\`\``
             });

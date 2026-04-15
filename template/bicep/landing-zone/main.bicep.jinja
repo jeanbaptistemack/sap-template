@@ -12,7 +12,7 @@ param environment string = 'dev'
 param location string = 'francecentral'
 
 @description('Project short name')
-param project string = '{{ project_name | replace('-', '') | truncate(10, True, '') }}'
+param project string = '{{ iac_short_name }}'
 
 // TODO: Define your landing zone resources here
 // resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {

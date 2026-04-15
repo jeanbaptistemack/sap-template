@@ -46,12 +46,12 @@ clean:
 
 # Bootstrap: créer le storage account pour le state (une fois par env)
 tofu-bootstrap ENV="dev":
-    cd tofu/stacks/bootstrap && tofu init -backend-config=../../environments/{{ENV}}/backend.hcl
+    cd tofu/stacks/bootstrap && tofu init
     cd tofu/stacks/bootstrap && tofu apply -var-file=../../environments/{{ENV}}/{{ENV}}.tfvars
 
-# Init un stack avec le backend config
+# Init un stack avec le backend config (key = STACK.tfstate)
 tofu-init STACK="networking" ENV="dev":
-    cd tofu/stacks/{{STACK}} && tofu init -backend-config=../../environments/{{ENV}}/backend.hcl
+    cd tofu/stacks/{{STACK}} && tofu init -backend-config=../../environments/{{ENV}}/backend.hcl -backend-config="key={{STACK}}.tfstate"
 
 # Planifier les changements
 tofu-plan STACK="networking" ENV="dev":

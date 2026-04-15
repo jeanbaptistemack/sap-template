@@ -13,7 +13,6 @@ permissions:
 jobs:
   apply:
     runs-on: ubuntu-latest
-    environment: production
     strategy:
       matrix:
         stack: [networking, data]
@@ -34,7 +33,7 @@ jobs:
 
       - name: Tofu Init
         working-directory: tofu/stacks/${{ "{{" }} matrix.stack {{ "}}" }}
-        run: tofu init -backend-config=../../environments/${{ "{{" }} matrix.environment {{ "}}" }}/backend.hcl
+        run: tofu init -backend-config=../../environments/${{ "{{" }} matrix.environment {{ "}}" }}/backend.hcl -backend-config="key=${{ "{{" }} matrix.stack {{ "}}" }}.tfstate"
 
       - name: Tofu Apply
         working-directory: tofu/stacks/${{ "{{" }} matrix.stack {{ "}}" }}

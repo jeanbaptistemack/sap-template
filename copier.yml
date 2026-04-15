@@ -67,6 +67,12 @@ enable_iac:
   default: false
   help: "Activer l'Infrastructure as Code (OpenTofu + Bicep + Azure CLI) ?"
 
+iac_short_name:
+  type: str
+  help: "Nom court IaC pour le naming Azure (max 10 chars, ex: 4it, zexplore)"
+  default: "{{ project_name | replace('sap-', '') | replace('-', '') | truncate(10, True, '') }}"
+  when: "{{ enable_iac }}"
+
 abap_package_name:
   type: str
   help: "Nom du package ABAP cible (ex: ZEXPLORE)"
