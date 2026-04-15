@@ -57,3 +57,13 @@ update_mcp_server "sap-adt-mcp"
 # SAP GUI MCP
 # =============================================================================
 update_mcp_server "sap-gui-mcp"
+
+# =============================================================================
+# IaC — Azure CLI session check
+# =============================================================================
+# echo "[iac] Azure CLI session check..."
+# if command -v az &>/dev/null; then
+#   az account show &>/dev/null 2>&1 \
+#     && echo "  az logged in: $(az account show --query name -o tsv)" \
+#     || echo "  az not logged in — run: just az-login"
+# fi

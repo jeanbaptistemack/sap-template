@@ -1,0 +1,58 @@
+name: OpenTofu Plan
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tofu/**'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        stack: [networking, data]
+        environment: [dev]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ "{{" }} secrets.AZURE_CLIENT_ID {{ "}}" }}
+          tenant-id: ${{ "{{" }} secrets.AZURE_TENANT_ID {{ "}}" }}
+          subscription-id: ${{ "{{" }} secrets.AZURE_SUBSCRIPTION_ID {{ "}}" }}
+
+      - name: Tofu Init
+        working-directory: tofu/stacks/${{ "{{" }} matrix.stack {{ "}}" }}
+        run: tofu init -backend-config=../../environments/${{ "{{" }} matrix.environment {{ "}}" }}/backend.hcl
+
+      - name: Tofu Plan
+        working-directory: tofu/stacks/${{ "{{" }} matrix.stack {{ "}}" }}
+        run: tofu plan -var-file=../../environments/${{ "{{" }} matrix.environment {{ "}}" }}/${{ "{{" }} matrix.environment {{ "}}" }}.tfvars -no-color -out=tfplan
+        continue-on-error: true
+
+      - name: Post Plan to PR
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const output = `#### OpenTofu Plan: \`${{ "{{" }} matrix.stack {{ "}}" }}\` / \`${{ "{{" }} matrix.environment {{ "}}" }}\`
+            \`\`\`
+            Plan output will be shown here
+            \`\`\``;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });

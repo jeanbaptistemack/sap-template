@@ -1,0 +1,4 @@
+resource_group_name  = "rg-{{ project_name | replace('-', '') | truncate(10, True, '') }}-tfstate-dev"
+storage_account_name = "st{{ project_name | replace('-', '') | truncate(10, True, '') }}tfstatedev"
+container_name       = "tfstate"
+key                  = "terraform.tfstate"

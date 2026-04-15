@@ -10,7 +10,9 @@
   "features": {
     "ghcr.io/devcontainers/features/node:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/git-lfs:1": {}
+    "ghcr.io/devcontainers/features/git-lfs:1": {}{% if enable_iac %},
+    "ghcr.io/devcontainers/features/azure-cli:1": {},
+    "ghcr.io/devcontainers-extra/features/opentofu:1": {}{% endif %}
   },
 
   "initializeCommand": "mkdir -p ${HOME}/.claude",
@@ -22,7 +24,8 @@
         "humao.rest-client",
         "redhat.vscode-yaml",
         "ms-azuretools.vscode-azureresourcegroups",
-        "bierner.markdown-mermaid"
+        "bierner.markdown-mermaid"{% if enable_iac %},
+        "ms-azuretools.vscode-bicep"{% endif %}
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash"

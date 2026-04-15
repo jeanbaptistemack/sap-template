@@ -1,0 +1,21 @@
+// =============================================================================
+// Landing Zone — {{ project_name }}
+// Deploy: az deployment sub create --location francecentral --template-file bicep/landing-zone/main.bicep
+// =============================================================================
+
+targetScope = 'subscription'
+
+@description('Environment name')
+param environment string = 'dev'
+
+@description('Azure region')
+param location string = 'francecentral'
+
+@description('Project short name')
+param project string = '{{ project_name | replace('-', '') | truncate(10, True, '') }}'
+
+// TODO: Define your landing zone resources here
+// resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
+//   name: 'rg-${project}-${environment}'
+//   location: location
+// }

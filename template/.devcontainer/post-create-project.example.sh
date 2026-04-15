@@ -70,3 +70,28 @@ fi
 # sap-gui-mcp requires Windows (COM/pywin32), configured as SSE in .mcp.json
 # No local install needed — adjust the SSE URL in .mcp.json if needed
 echo "[project] sap-gui-mcp configured as SSE remote (see .mcp.json)"
+
+# =============================================================================
+# IaC Tooling — Azure CLI, OpenTofu, Bicep (si enable_iac)
+# =============================================================================
+# echo "[iac] Azure CLI..."
+# if command -v az &>/dev/null; then
+#   echo "  az already installed"
+# else
+#   curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash 2>/dev/null
+# fi
+#
+# echo "[iac] OpenTofu..."
+# if command -v tofu &>/dev/null; then
+#   echo "  tofu already installed"
+# else
+#   curl -fsSL https://get.opentofu.org/install-opentofu.sh -o /tmp/install-opentofu.sh \
+#     && chmod +x /tmp/install-opentofu.sh \
+#     && sudo /tmp/install-opentofu.sh --install-method deb 2>/dev/null \
+#     && rm -f /tmp/install-opentofu.sh
+# fi
+#
+# echo "[iac] Bicep CLI..."
+# if command -v az &>/dev/null; then
+#   az bicep install 2>/dev/null
+# fi

@@ -38,3 +38,62 @@ ci: lint typecheck test
 clean:
     rm -rf dist/ .coverage coverage.xml htmlcov/ .pytest_cache/ .mypy_cache/ .ruff_cache/
     find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+{%- if enable_iac %}
+{% raw %}
+# =============================================================================
+# IaC — OpenTofu
+# =============================================================================
+
+# Bootstrap: créer le storage account pour le state (une fois par env)
+tofu-bootstrap ENV="dev":
+    cd tofu/stacks/bootstrap && tofu init -backend-config=../../environments/{{ENV}}/backend.hcl
+    cd tofu/stacks/bootstrap && tofu apply -var-file=../../environments/{{ENV}}/{{ENV}}.tfvars
+
+# Init un stack avec le backend config
+tofu-init STACK="networking" ENV="dev":
+    cd tofu/stacks/{{STACK}} && tofu init -backend-config=../../environments/{{ENV}}/backend.hcl
+
+# Planifier les changements
+tofu-plan STACK="networking" ENV="dev":
+    cd tofu/stacks/{{STACK}} && tofu plan -var-file=../../environments/{{ENV}}/{{ENV}}.tfvars
+
+# Appliquer les changements
+tofu-apply STACK="networking" ENV="dev":
+    cd tofu/stacks/{{STACK}} && tofu apply -var-file=../../environments/{{ENV}}/{{ENV}}.tfvars
+
+# Détruire un stack
+tofu-destroy STACK="networking" ENV="dev":
+    cd tofu/stacks/{{STACK}} && tofu destroy -var-file=../../environments/{{ENV}}/{{ENV}}.tfvars
+
+# Formatter tous les .tf
+tofu-fmt:
+    tofu fmt -recursive tofu/
+
+# Vérifier le formatage (CI)
+tofu-fmt-check:
+    tofu fmt -recursive -check tofu/
+
+# Valider tous les stacks
+tofu-validate:
+    #!/usr/bin/env bash
+    for stack in tofu/stacks/*/; do
+      echo "Validating $stack..."
+      (cd "$stack" && tofu validate)
+    done
+
+# IaC CI (format + validate)
+tofu-ci: tofu-fmt-check tofu-validate
+
+# =============================================================================
+# Azure CLI
+# =============================================================================
+
+# Login Azure (device code pour les containers)
+az-login:
+    az login --use-device-code
+
+# Afficher le contexte Azure courant
+az-ctx:
+    az account show --output table
+{% endraw %}
+{%- endif %}

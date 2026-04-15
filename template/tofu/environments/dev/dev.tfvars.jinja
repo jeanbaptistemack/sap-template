@@ -1,0 +1,4 @@
+environment     = "dev"
+subscription_id = "" # AZURE_SUBSCRIPTION_ID_DEV from .env
+location        = "francecentral"
+project         = "{{ project_name | replace('-', '') | truncate(10, True, '') }}"

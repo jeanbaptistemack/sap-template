@@ -12,3 +12,8 @@ test-results/*
 *.webm
 
 _references/
+
+# Generated projects (local testing)
+sap-zexplore/
+sap-zextract/
+4it-azure/

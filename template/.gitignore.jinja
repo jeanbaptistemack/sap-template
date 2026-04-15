@@ -58,3 +58,25 @@ logs/
 
 # DevContainer artifacts
 .bash_history
+{%- if enable_iac %}
+
+# =============================================================================
+# OpenTofu / Terraform IaC
+# =============================================================================
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+*.tfplan
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.auto.tfvars
+!tofu/**/.terraform.lock.hcl
+crash.log
+crash.*.log
+
+# Bicep
+*.compiled.json
+{%- endif %}

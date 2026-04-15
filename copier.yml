@@ -10,6 +10,7 @@ _min_copier_version: "9.0"
 # Clean up files that only apply to specific project types
 _tasks:
   - "{% if project_type != 'abap-project' %}rm -rf .abapgit.xml abap{% endif %}"
+  - "{% if not enable_iac %}rm -rf tofu bicep .github/workflows/tofu-plan.yml .github/workflows/tofu-apply.yml{% endif %}"
 
 # =============================================================================
 # Questions
@@ -60,6 +61,11 @@ github_org:
   type: str
   help: "Organisation ou username GitHub"
   default: "jeanbaptistemack"
+
+enable_iac:
+  type: bool
+  default: false
+  help: "Activer l'Infrastructure as Code (OpenTofu + Bicep + Azure CLI) ?"
 
 abap_package_name:
   type: str
