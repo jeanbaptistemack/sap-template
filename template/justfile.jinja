@@ -73,12 +73,12 @@ tofu-fmt:
 tofu-fmt-check:
     tofu fmt -recursive -check tofu/
 
-# Valider tous les stacks
+# Valider tous les stacks (init -backend=false pour installer les providers)
 tofu-validate:
     #!/usr/bin/env bash
     for stack in tofu/stacks/*/; do
       echo "Validating $stack..."
-      (cd "$stack" && tofu validate)
+      (cd "$stack" && tofu init -backend=false -input=false > /dev/null 2>&1 && tofu validate)
     done
 
 # IaC CI (format + validate)
