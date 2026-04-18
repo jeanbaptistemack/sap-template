@@ -167,6 +167,41 @@ bicep/
 └── entra-id/          — Configuration Entra ID (squelette)
 ```
 
+### Setup IaC (première fois)
+
+1. Renseigner `.env` : `AZURE_SUBSCRIPTION_ID_DEV`, `_PRD`, `AZURE_TENANT_ID`
+2. Renseigner `tofu/environments/dev/dev.tfvars` et `prd/prd.tfvars` avec les `subscription_id`
+3. `just az-login` — authentification Azure (device code)
+4. `just tofu-bootstrap ENV=dev` — créer le state storage (une fois par env)
+5. `just tofu-bootstrap ENV=prd` — idem pour PRD (state local isolé par env)
+
+### Setup GitHub Actions OIDC
+
+Les workflows utilisent OIDC (pas de secrets Azure stockés dans GitHub). Prérequis :
+
+1. **App Registration** dans Entra ID (une par env : DEV et PRD)
+2. **Role Assignment** : rôle `Contributor` sur la subscription cible
+   ```bash
+   az role assignment list --assignee "$AZURE_CLIENT_ID_DEV" \
+     --subscription "$AZURE_SUBSCRIPTION_ID_DEV" -o table
+   ```
+3. **GitHub Environments** : créer `dev` et `prd` dans Settings > Environments
+4. **Secrets par Environment** (pas repo-level) :
+   - `AZURE_CLIENT_ID` (différent par env)
+   - `AZURE_TENANT_ID` (même pour les deux)
+   - `AZURE_SUBSCRIPTION_ID` (différent par env)
+5. **Federated Identity Credentials** sur chaque App Registration :
+   ```bash
+   az ad app federated-credential create --id "$AZURE_CLIENT_ID_DEV" \
+     --parameters '{
+       "name": "github-env-dev-{{ project_name }}",
+       "issuer": "https://token.actions.githubusercontent.com",
+       "subject": "repo:{{ github_org }}/{{ project_name }}:environment:dev",
+       "audiences": ["api://AzureADTokenExchange"]
+     }'
+   ```
+   Le `subject` doit correspondre au `environment:` du workflow. Les subjects `pull_request` et `ref:refs/heads/main` ne fonctionnent PAS quand le job utilise `environment:`.
+
 ### Workflow IaC
 
 1. `just az-login` — authentification Azure (device code)
@@ -174,10 +209,12 @@ bicep/
 3. `just tofu-init STACK=networking ENV=dev` — initialiser un stack
 4. `just tofu-plan STACK=networking ENV=dev` — prévisualiser les changements
 5. `just tofu-apply STACK=networking ENV=dev` — appliquer
+6. Pousser une branche touchant `tofu/**` → plan en PR → merge → apply
 
 ### Règles IaC
 - Un stack = une responsabilité (networking, data, compute)
-- State distant dans Azure Storage (jamais local)
+- State distant dans Azure Storage (jamais local, sauf bootstrap)
+- Bootstrap : state local isolé par env (`terraform-dev.tfstate`, `terraform-prd.tfstate`)
 - Secrets via `AZURE_SUBSCRIPTION_ID_DEV` / `_PRD` dans `.env`
 - Toujours `tofu plan` avant `tofu apply`
 - Les `.tfvars` sont versionnés, les `.tfstate` jamais
