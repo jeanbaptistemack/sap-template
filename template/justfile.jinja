@@ -45,9 +45,12 @@ clean:
 # =============================================================================
 
 # Bootstrap: créer le storage account pour le state (une fois par env)
+# -state isolé par env pour ne pas écraser DEV en bootstrappant PRD
 tofu-bootstrap ENV="dev":
     cd tofu/stacks/bootstrap && tofu init
-    cd tofu/stacks/bootstrap && tofu apply -var-file=../../environments/{{ENV}}/{{ENV}}.tfvars
+    cd tofu/stacks/bootstrap && tofu apply \
+      -var-file=../../environments/{{ENV}}/{{ENV}}.tfvars \
+      -state=terraform-{{ENV}}.tfstate
 
 # Init un stack avec le backend config (key = STACK.tfstate)
 tofu-init STACK="networking" ENV="dev":
