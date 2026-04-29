@@ -1,16 +1,15 @@
 {
   "mcpServers": {
-    "sap-adt-mcp": {
-      "command": "uv",
-      "args": ["run", "--project", "/opt/sap-adt-mcp", "python", "-m", "sap_adt_mcp"],
-      "cwd": "/opt/sap-adt-mcp",
-      "env": {
-        "NODE_TLS_REJECT_UNAUTHORIZED": "0"
-      }
+    "sap-adt": {
+      "type": "http",
+      "url": "http://127.0.0.1:8000/mcp"
     },
-    "sap-gui-mcp": {
-      "type": "sse",
-      "url": "http://192.168.50.119:8001/sse"
+    "mcp-sap-docs": {
+      "command": "/bin/sh",
+      "args": ["-c", "cd /opt/mcp-sap-docs && exec node stdio-wrapper.js"],
+      "env": {
+        "MCP_VARIANT": "abap"
+      }
     }
   }
 }
