@@ -6,6 +6,12 @@
 WORKSPACE_DIR="${containerWorkspaceFolder:-$(pwd)}"
 BASHRC="$HOME/.bashrc"
 
+# postStartCommand inherits a minimal system PATH and does not source ~/.bashrc,
+# so user-installed CLIs (uv, cargo, claude) are invisible here and to any
+# subprocess we launch (notably post-start-project.sh and the MCP servers it
+# spawns). Re-export the same PATH that post-create.sh sets up.
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.claude/bin:$PATH"
+
 echo "============================================"
 echo "  Post-start checks..."
 echo "============================================"
