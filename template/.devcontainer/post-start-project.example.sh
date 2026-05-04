@@ -13,39 +13,43 @@ if [ -f "$WORKSPACE_DIR/.env" ]; then
 fi
 
 # =============================================================================
-# Helper: pull + rebuild an MCP server (background)
+# Helper: pull + rebuild an MCP server (FOREGROUND on cold rebuild)
 # Auto-detects project type: Python (pyproject.toml) or Node.js (package.json)
+#
+# Foreground (was background in v0.8.9): adds 5-30s to postStart on cold
+# rebuild but eliminates the race with the daemon launch below — the venv
+# is guaranteed ready and the log is reliably written.
 # =============================================================================
 update_mcp_server() {
   local NAME="$1"
   local DEST="/opt/$NAME"
   local LOG="/tmp/$NAME.log"
 
-  echo "[project] $NAME update (background)..."
-  if [ -d "$DEST" ]; then
-    (
-      cd "$DEST"
-      # Configure git to use token for private repos
-      if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
-        git remote set-url origin "$(git remote get-url origin | sed "s|https://github.com|https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com|")" 2>/dev/null
-      fi
-      git pull --quiet 2>/dev/null
-
-      if [ -f "pyproject.toml" ]; then
-        uv sync --quiet 2>/dev/null && \
-          echo "[$(date -Iseconds)] $NAME updated (Python)" >> "$LOG" || \
-          echo "[$(date -Iseconds)] $NAME update failed" >> "$LOG"
-      elif [ -f "package.json" ]; then
-        npm ci --silent 2>/dev/null && \
-          npm run build --silent 2>/dev/null && \
-          echo "[$(date -Iseconds)] $NAME updated (Node.js)" >> "$LOG" || \
-          echo "[$(date -Iseconds)] $NAME update failed" >> "$LOG"
-      fi
-    ) &
-    echo "  running in background (log: $LOG)"
-  else
+  echo "[project] $NAME update..."
+  if [ ! -d "$DEST" ]; then
     echo "  not installed — run Rebuild Container to install"
+    return 0
   fi
+
+  cd "$DEST"
+  # Configure git to use token for private repos
+  if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
+    git remote set-url origin "$(git remote get-url origin | sed "s|https://github.com|https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com|")" 2>/dev/null
+  fi
+  git pull --quiet 2>/dev/null
+
+  if [ -f "pyproject.toml" ]; then
+    uv sync --quiet 2>/dev/null && \
+      echo "[$(date -Iseconds)] $NAME updated (Python)" >> "$LOG" || \
+      echo "[$(date -Iseconds)] $NAME update failed" >> "$LOG"
+  elif [ -f "package.json" ]; then
+    npm ci --silent 2>/dev/null && \
+      npm run build --silent 2>/dev/null && \
+      echo "[$(date -Iseconds)] $NAME updated (Node.js)" >> "$LOG" || \
+      echo "[$(date -Iseconds)] $NAME update failed" >> "$LOG"
+  fi
+  cd "$WORKSPACE_DIR"
+  echo "  done (log: $LOG)"
 }
 
 # =============================================================================
@@ -55,29 +59,22 @@ update_mcp_server "sap-adt-mcp"
 
 # Since Sprint 4 PR-S4.2, sap-adt-mcp is a streamable-http server (no longer
 # stdio): .mcp.json points at http://127.0.0.1:8000/mcp, so a process must
-# actually listen there. Launch in background, after `uv sync` finishes.
+# actually listen there.
+#
+# `setsid -f` does fork+setsid+exec atomically: the daemon enters a new
+# session BEFORE the parent returns, so it's immune to the SIGHUP/SIGTERM
+# postStartCommand sends to its process group on exit. No nested `(...) &`,
+# no `nohup`, no `disown`, no wait-loop — update_mcp_server above ran
+# foreground so there's no concurrent `uv sync` to race against.
 SAP_ADT_LOG="/tmp/sap-adt-mcp.log"
-if [ -d "/opt/sap-adt-mcp" ]; then
-  if pgrep -f "sap_adt_mcp" > /dev/null 2>&1; then
-    echo "[project] sap-adt-mcp HTTP server already running"
-  else
-    echo "[project] sap-adt-mcp HTTP server starting..."
-    (
-      # Wait up to 120s for any concurrent `uv sync` to finish — first rebuild
-      # without cache downloads deps from scratch and easily exceeds 30s.
-      for _ in $(seq 1 120); do
-        pgrep -f "uv sync" > /dev/null 2>&1 || break
-        sleep 1
-      done
-      cd /opt/sap-adt-mcp || exit 1
-      # setsid + nohup + </dev/null: fully detach from postStartCommand's
-      # process group so the server survives once VS Code's postStart wrapper
-      # returns. Without setsid, disown alone only works under a TTY.
-      setsid nohup uv run python -m sap_adt_mcp >> "$SAP_ADT_LOG" 2>&1 < /dev/null &
-      disown 2>/dev/null || true
-    ) &
-    echo "  log: $SAP_ADT_LOG — endpoint: http://127.0.0.1:8000/mcp"
-  fi
+if [ -d "/opt/sap-adt-mcp" ] && ! pgrep -f "sap_adt_mcp" > /dev/null 2>&1; then
+  echo "[project] sap-adt-mcp HTTP server starting..."
+  cd /opt/sap-adt-mcp
+  setsid -f uv run python -m sap_adt_mcp >> "$SAP_ADT_LOG" 2>&1 < /dev/null
+  cd "$WORKSPACE_DIR"
+  echo "  log: $SAP_ADT_LOG — endpoint: http://127.0.0.1:8000/mcp"
+elif pgrep -f "sap_adt_mcp" > /dev/null 2>&1; then
+  echo "[project] sap-adt-mcp HTTP server already running"
 fi
 
 # =============================================================================

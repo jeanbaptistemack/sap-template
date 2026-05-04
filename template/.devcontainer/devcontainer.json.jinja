@@ -42,6 +42,9 @@
 
   "postStartCommand": "bash ${containerWorkspaceFolder}/.devcontainer/post-start.sh",
 
+  "remoteUser": "vscode",
+  "userEnvProbe": "loginShell",
+
   "remoteEnv": {
     "PATH": "${containerEnv:HOME}/.local/bin:${containerEnv:HOME}/.claude/bin:${containerEnv:PATH}",
     "TMPDIR": "/tmp/claude-code",
@@ -52,6 +55,7 @@
   },
 
   "containerEnv": {
+    "HOME": "/home/vscode",
     "HISTFILE": "${containerWorkspaceFolder}/.bash_history"
   }
 }
