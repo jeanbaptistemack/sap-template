@@ -63,12 +63,17 @@ if [ -d "/opt/sap-adt-mcp" ]; then
   else
     echo "[project] sap-adt-mcp HTTP server starting..."
     (
-      for _ in 1 2 3 4 5 6; do
+      # Wait up to 120s for any concurrent `uv sync` to finish — first rebuild
+      # without cache downloads deps from scratch and easily exceeds 30s.
+      for _ in $(seq 1 120); do
         pgrep -f "uv sync" > /dev/null 2>&1 || break
         sleep 1
       done
       cd /opt/sap-adt-mcp || exit 1
-      nohup uv run python -m sap_adt_mcp >> "$SAP_ADT_LOG" 2>&1 &
+      # setsid + nohup + </dev/null: fully detach from postStartCommand's
+      # process group so the server survives once VS Code's postStart wrapper
+      # returns. Without setsid, disown alone only works under a TTY.
+      setsid nohup uv run python -m sap_adt_mcp >> "$SAP_ADT_LOG" 2>&1 < /dev/null &
       disown 2>/dev/null || true
     ) &
     echo "  log: $SAP_ADT_LOG — endpoint: http://127.0.0.1:8000/mcp"
