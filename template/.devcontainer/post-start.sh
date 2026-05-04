@@ -3,6 +3,14 @@
 # Post-start script — runs on every container start (postStartCommand)
 # =============================================================================
 
+# postStartCommand is launched via `docker exec -u vscode ...` and the base
+# devcontainer image does not declare ENV HOME, so $HOME is often empty here.
+# An empty $HOME silently expands `$HOME/.local/bin` to `/.local/bin` and
+# breaks every PATH lookup downstream (uv, cargo, claude). Resolve from
+# /etc/passwd before anything else uses $HOME.
+HOME="${HOME:-$(getent passwd "$(whoami)" | cut -d: -f6)}"
+export HOME
+
 WORKSPACE_DIR="${containerWorkspaceFolder:-$(pwd)}"
 BASHRC="$HOME/.bashrc"
 
