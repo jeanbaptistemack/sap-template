@@ -30,7 +30,10 @@ install_mcp_server() {
     fi
 
     sudo mkdir -p "$DEST" && sudo chown -R "$(whoami):$(whoami)" "$DEST"
-    git clone "$CLONE_URL" "$DEST" 2>/dev/null || \
+    # GIT_LFS_SKIP_SMUDGE: the LFS smudge filter calls `git credential fill`
+    # and ignores the inline PAT, so it prompts (and fails) on private repos.
+    # MCP servers ship code, not LFS payloads — skip is safe.
+    GIT_LFS_SKIP_SMUDGE=1 git clone "$CLONE_URL" "$DEST" 2>/dev/null || \
       { echo "  WARNING: clone failed for $NAME"; return 0; }
   fi
 
