@@ -49,14 +49,36 @@ update_mcp_server() {
 }
 
 # =============================================================================
-# SAP ADT MCP
+# SAP ADT MCP — pull/rebuild + launch streamable-http server
 # =============================================================================
 update_mcp_server "sap-adt-mcp"
 
+# Since Sprint 4 PR-S4.2, sap-adt-mcp is a streamable-http server (no longer
+# stdio): .mcp.json points at http://127.0.0.1:8000/mcp, so a process must
+# actually listen there. Launch in background, after `uv sync` finishes.
+SAP_ADT_LOG="/tmp/sap-adt-mcp.log"
+if [ -d "/opt/sap-adt-mcp" ]; then
+  if pgrep -f "sap_adt_mcp" > /dev/null 2>&1; then
+    echo "[project] sap-adt-mcp HTTP server already running"
+  else
+    echo "[project] sap-adt-mcp HTTP server starting..."
+    (
+      for _ in 1 2 3 4 5 6; do
+        pgrep -f "uv sync" > /dev/null 2>&1 || break
+        sleep 1
+      done
+      cd /opt/sap-adt-mcp || exit 1
+      nohup uv run python -m sap_adt_mcp >> "$SAP_ADT_LOG" 2>&1 &
+      disown 2>/dev/null || true
+    ) &
+    echo "  log: $SAP_ADT_LOG — endpoint: http://127.0.0.1:8000/mcp"
+  fi
+fi
+
 # =============================================================================
-# SAP GUI MCP
+# SAP GUI MCP — remote (Windows VM via HTTP), nothing to start locally
 # =============================================================================
-update_mcp_server "sap-gui-mcp"
+echo "[project] sap-gui-mcp is remote (see .mcp.json) — no local start"
 
 # =============================================================================
 # IaC — Azure CLI session check
