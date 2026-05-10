@@ -57,24 +57,16 @@ update_mcp_server() {
 # =============================================================================
 update_mcp_server "sap-adt-mcp"
 
-# Since Sprint 4 PR-S4.2, sap-adt-mcp is a streamable-http server (no longer
-# stdio): .mcp.json points at http://127.0.0.1:8000/mcp, so a process must
-# actually listen there.
-#
-# `setsid -f` does fork+setsid+exec atomically: the daemon enters a new
-# session BEFORE the parent returns, so it's immune to the SIGHUP/SIGTERM
-# postStartCommand sends to its process group on exit. No nested `(...) &`,
-# no `nohup`, no `disown`, no wait-loop — update_mcp_server above ran
-# foreground so there's no concurrent `uv sync` to race against.
-SAP_ADT_LOG="/tmp/sap-adt-mcp.log"
-if [ -d "/opt/sap-adt-mcp" ] && ! pgrep -f "sap_adt_mcp" > /dev/null 2>&1; then
-  echo "[project] sap-adt-mcp HTTP server starting..."
-  cd /opt/sap-adt-mcp
-  setsid -f uv run python -m sap_adt_mcp >> "$SAP_ADT_LOG" 2>&1 < /dev/null
-  cd "$WORKSPACE_DIR"
-  echo "  log: $SAP_ADT_LOG — endpoint: http://127.0.0.1:8000/mcp"
-elif pgrep -f "sap_adt_mcp" > /dev/null 2>&1; then
-  echo "[project] sap-adt-mcp HTTP server already running"
+# Since v2.x sap-adt-mcp ships its own canonical launcher at
+# scripts/mcp-server.sh — it manages PID file, log file (logs/server.log),
+# health check on /.well-known/oauth-protected-resource, and is idempotent
+# (start = no-op if already running). Prefer it over a custom setsid call.
+SAP_ADT_LAUNCHER="/opt/sap-adt-mcp/scripts/mcp-server.sh"
+if [ -x "$SAP_ADT_LAUNCHER" ]; then
+  "$SAP_ADT_LAUNCHER" start
+elif [ -d "/opt/sap-adt-mcp" ]; then
+  echo "[project] sap-adt-mcp present but scripts/mcp-server.sh missing —"
+  echo "  upgrade /opt/sap-adt-mcp to v2.x (4ITServices/sap-adt-mcp >= 2.6.1)"
 fi
 
 # =============================================================================

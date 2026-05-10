@@ -7,6 +7,41 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Earlier releases (v0.1.0–v0.8.11) are documented in their git tag annotations
 and commit messages; this changelog starts at v0.8.12.
 
+## [0.8.13] — 2026-05-10
+
+### Changed
+
+- Bump sap-adt-mcp deployment to **v2.6.1+**. Repository moved from
+  `jeanbaptistemack/sap-adt-mcp` to `4ITServices/sap-adt-mcp`.
+  - `post-create-project.example.sh` clones the new origin URL.
+  - `.devcontainer/README.md` updates URL and describes the new launch
+    flow / log path.
+- `post-start-project.example.sh` delegates to the canonical launcher
+  shipped by sap-adt-mcp itself: `scripts/mcp-server.sh start`. The
+  script handles PID file, log file (`/opt/sap-adt-mcp/logs/server.log`),
+  health check on `/.well-known/oauth-protected-resource`, and is
+  idempotent. Drops our local `setsid -f uv run …` block — the v2.x
+  upstream script does the same detachment and adds health-wait + PID
+  management.
+
+### Added
+
+- `.env.example.jinja` (mcp-server projects): optional
+  `VOYAGE_API_KEY` / `OPENAI_API_KEY` (commented) for sap-adt-mcp's
+  offline SAP Docs semantic search. Without them, sap-adt-mcp falls
+  back to BM25 (plain-text) automatically.
+
+### Notes
+
+- Phase D (split of `ZCL_MCP_ICF` into 3 classes) is handled SAP-side
+  via `bridge_install_offline` / `bridge_migrate_v2` MCP tools — the
+  template does not ship ABAP bootstrap scripts for ZMCP, so no change
+  needed here. Existing downstream projects with the legacy mono-class
+  in their SAP system should run `bridge_migrate_v2 confirm:true`.
+- `SAP_STACK` / `SAP_DB` are auto-detected by sap-adt-mcp at lifespan
+  startup; not added to `.env.example` to avoid inventing config that
+  isn't in the canonical sap-adt-mcp `.env.example`.
+
 ## [0.8.12] — 2026-05-04
 
 ### Fixed

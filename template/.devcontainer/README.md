@@ -60,17 +60,23 @@ template scripts. They are **never overwritten** by `copier update`.
 `post-create-project.example.sh` and `post-start-project.example.sh` ship with
 support for two MCP servers:
 
-- [sap-adt-mcp](https://github.com/jeanbaptistemack/sap-adt-mcp) — SAP ABAP
-  Development Tools (ADT REST API + RFC). Lecture/ecriture objets ABAP, syntax
-  check, activation, transport management.
+- [sap-adt-mcp](https://github.com/4ITServices/sap-adt-mcp) (>= 2.6.1) — SAP
+  ABAP Development Tools (ADT REST API + RFC + HANA). Streamable-HTTP transport
+  on `http://127.0.0.1:8000/mcp`. Read/write ABAP objects, syntax check,
+  activation, transport management, abapGit bridge (Phase D), HANA queries.
 - [sap-gui-mcp](https://github.com/jeanbaptistemack/sap-gui-mcp) — SAP GUI
-  automation. Session management, navigation ecran, execution transactions.
+  automation, runs remote on a Windows VM (referenced via `.mcp.json` only,
+  no local install).
 
-**post-create**: clones both repos and builds them (`npm ci && npm run build`)
-into `/opt/sap-adt-mcp` and `/opt/sap-gui-mcp`.
+**post-create**: clones sap-adt-mcp into `/opt/sap-adt-mcp` and runs
+`uv sync`. Symlinks the workspace `.env` so pydantic-settings finds SAP
+credentials.
 
-**post-start**: pulls latest changes and rebuilds in background (container
-available immediately, logs in `/tmp/sap-adt-mcp.log` and `/tmp/sap-gui-mcp.log`).
+**post-start**: foreground `git pull` + `uv sync` of `/opt/sap-adt-mcp`,
+then delegates to the canonical launcher `scripts/mcp-server.sh start`
+shipped by sap-adt-mcp (manages PID file, log file at
+`/opt/sap-adt-mcp/logs/server.log`, health check on
+`/.well-known/oauth-protected-resource`, idempotent).
 
 ### MCP configuration (.mcp.json)
 

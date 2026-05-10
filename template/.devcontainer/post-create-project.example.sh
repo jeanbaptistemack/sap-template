@@ -59,7 +59,7 @@ install_mcp_server() {
 # =============================================================================
 # SAP ADT MCP — ABAP Development Tools (ADT REST + RFC)
 # =============================================================================
-install_mcp_server "sap-adt-mcp" "https://github.com/jeanbaptistemack/sap-adt-mcp.git"
+install_mcp_server "sap-adt-mcp" "https://github.com/4ITServices/sap-adt-mcp.git"
 
 # Symlink workspace .env into sap-adt-mcp so pydantic-settings finds credentials
 if [ -f "$WORKSPACE_DIR/.env" ] && [ -d "/opt/sap-adt-mcp" ]; then
