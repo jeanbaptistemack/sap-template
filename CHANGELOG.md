@@ -7,6 +7,41 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Earlier releases (v0.1.0–v0.8.11) are documented in their git tag annotations
 and commit messages; this changelog starts at v0.8.12.
 
+## [0.8.14] — 2026-05-11
+
+### Added
+
+- Optional dual-stack deployment of sap-adt-mcp: a second instance can run
+  side-by-side targeting **SAP ECC EHP8** (NetWeaver 7.50) on port 8001,
+  while the existing S/4HANA 2023 FPS03 instance keeps using port 8000.
+  Gated by a new copier question `enable_ecc_stack` (default: false).
+- New file `.env.ecc.example.jinja` (rendered only when the dual stack is
+  enabled): contains the ECC SAP_* connection block. Users copy it to
+  `.env.ecc`, which `mcp-server-ecc.sh` sources to override SAP_URL etc.
+- `.mcp.json.example.jinja` adds a conditional `sap-adt-ecc` entry pointing
+  at `http://127.0.0.1:8001/mcp`. Tools become addressable as
+  `mcp__sap-adt-ecc__*`.
+- `post-create-project.example.sh` symlinks `.env.ecc` →
+  `/opt/sap-adt-mcp/.env.ecc` (mirrors the existing `.env` symlink).
+- `post-start-project.example.sh` launches `mcp-server-ecc.sh start` when
+  both the script and `.env.ecc` are present. Drop `.env.ecc` to disable
+  ECC at runtime without regenerating the template.
+- `.devcontainer/README.md` documents the dual-stack flow (launchers,
+  ports, log paths, how to activate / deactivate).
+
+### Notes
+
+- ECC EHP8 stack ID `ecc_ehp8` is auto-detected upstream; no env var
+  required. Users who want to force it explicitly can set `SAP_STACK` in
+  `.env.ecc` (commented hint shipped in the example).
+- The post-start launch is opt-in by file presence rather than Jinja
+  gating, so users can flip ECC on/off after generation without re-
+  running `copier update`.
+- ~155 tools surface on the ECC instance (vs ~190 on S/4): RAP / CDS /
+  SRVB are excluded by capability gating, plus 15 SAP-side quirks (501
+  on `find_definition`, `usage_references`, etc.) are documented at
+  `/opt/sap-adt-mcp/docs/ecc-ehp8-quirks.md`.
+
 ## [0.8.13] — 2026-05-10
 
 ### Changed

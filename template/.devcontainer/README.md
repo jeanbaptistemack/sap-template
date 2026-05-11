@@ -78,6 +78,34 @@ shipped by sap-adt-mcp (manages PID file, log file at
 `/opt/sap-adt-mcp/logs/server.log`, health check on
 `/.well-known/oauth-protected-resource`, idempotent).
 
+### Dual-stack: ECC EHP8 second instance (optional)
+
+When the template is generated with `enable_ecc_stack: true`, a second
+sap-adt-mcp instance can run side-by-side on port 8001, targeting SAP
+ECC EHP8 (NetWeaver 7.50, ~155 tools — RAP / CDS / SRVB excluded). The
+two instances cohabit on the same machine:
+
+| Stack | Port | Launcher | Log | PID |
+|---|---|---|---|---|
+| S/4HANA 2023 FPS03 | 8000 | `scripts/mcp-server.sh` | `logs/server.log` | `.mcp-server.pid` |
+| ECC EHP8 | 8001 | `scripts/mcp-server-ecc.sh` | `logs/server-ecc.log` | `.mcp-server-ecc.pid` |
+
+To activate at runtime:
+
+1. Copy `.env.ecc.example` → `.env.ecc` and fill in the ECC credentials.
+2. Rebuild the container (or run `bash .devcontainer/post-start-project.sh`).
+3. `.mcp.json` exposes both instances under names `sap-adt` (S/4) and
+   `sap-adt-ecc` (ECC). Tools are addressable via `mcp__sap-adt__*` and
+   `mcp__sap-adt-ecc__*` respectively.
+
+The ECC launcher reads `/opt/sap-adt-mcp/.env.ecc` (symlinked from the
+workspace by `post-create-project.sh`), overrides `MCP_PORT=8001`, then
+delegates to the same canonical `mcp-server.sh`. To disable: delete
+`.env.ecc` — the post-start block becomes a no-op.
+
+ECC quirks (15 SAP-side + 3 ZMCP) are documented upstream in
+`/opt/sap-adt-mcp/docs/ecc-ehp8-quirks.md`.
+
 ### MCP configuration (.mcp.json)
 
 Copy `.mcp.json.example` to `.mcp.json` :

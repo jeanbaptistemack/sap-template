@@ -67,6 +67,13 @@ if [ -f "$WORKSPACE_DIR/.env" ] && [ -d "/opt/sap-adt-mcp" ]; then
   echo "  .env symlinked to /opt/sap-adt-mcp/"
 fi
 
+# Same for the optional second instance targeting ECC EHP8 (port 8001).
+# mcp-server-ecc.sh reads /opt/sap-adt-mcp/.env.ecc.
+if [ -f "$WORKSPACE_DIR/.env.ecc" ] && [ -d "/opt/sap-adt-mcp" ]; then
+  ln -sf "$WORKSPACE_DIR/.env.ecc" /opt/sap-adt-mcp/.env.ecc
+  echo "  .env.ecc symlinked to /opt/sap-adt-mcp/ (ECC stack)"
+fi
+
 # =============================================================================
 # SAP GUI MCP — SAP GUI automation (SSE remote — runs on Windows VM)
 # =============================================================================

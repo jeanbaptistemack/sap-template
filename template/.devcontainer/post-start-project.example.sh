@@ -69,6 +69,14 @@ elif [ -d "/opt/sap-adt-mcp" ]; then
   echo "  upgrade /opt/sap-adt-mcp to v2.x (4ITServices/sap-adt-mcp >= 2.6.1)"
 fi
 
+# Optional second instance targeting SAP ECC EHP8 on port 8001. Only fires
+# if both the ECC launcher and .env.ecc exist (so the dual-stack stays
+# fully opt-in: drop .env.ecc → only S/4 starts on rebuild).
+SAP_ADT_ECC_LAUNCHER="/opt/sap-adt-mcp/scripts/mcp-server-ecc.sh"
+if [ -f "/opt/sap-adt-mcp/.env.ecc" ] && [ -x "$SAP_ADT_ECC_LAUNCHER" ]; then
+  "$SAP_ADT_ECC_LAUNCHER" start
+fi
+
 # =============================================================================
 # SAP GUI MCP — remote (Windows VM via HTTP), nothing to start locally
 # =============================================================================

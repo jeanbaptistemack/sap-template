@@ -4,6 +4,12 @@
       "type": "http",
       "url": "http://127.0.0.1:8000/mcp"
     },
+    {%- if enable_ecc_stack | default(false) %}
+    "sap-adt-ecc": {
+      "type": "http",
+      "url": "http://127.0.0.1:8001/mcp"
+    },
+    {%- endif %}
     "mcp-sap-docs": {
       "command": "/bin/sh",
       "args": ["-c", "cd /opt/mcp-sap-docs && exec node stdio-wrapper.js"],

@@ -11,6 +11,7 @@ _min_copier_version: "9.0"
 _tasks:
   - "{% if project_type != 'abap-project' %}rm -rf .abapgit.xml abap{% endif %}"
   - "{% if not enable_iac %}rm -rf tofu bicep .github/workflows/tofu-plan.yml .github/workflows/tofu-apply.yml{% endif %}"
+  - "{% if not enable_ecc_stack %}rm -f .env.ecc.example{% endif %}"
 
 # =============================================================================
 # Questions
@@ -78,6 +79,16 @@ abap_package_name:
   help: "Nom du package ABAP cible (ex: ZEXPLORE)"
   default: "{{ project_name | upper | replace('SAP-', '') | replace('-', '') }}"
   when: "{{ project_type == 'abap-project' }}"
+
+enable_ecc_stack:
+  type: bool
+  default: false
+  help: >-
+    Activer un second serveur sap-adt-mcp ciblant SAP ECC EHP8 (NW 7.50) sur
+    le port 8001 en plus du S/4HANA sur 8000 ? Génère .env.ecc.example, ajoute
+    une entrée sap-adt-ecc dans .mcp.json.example et lance mcp-server-ecc.sh
+    en post-start si .env.ecc existe.
+  when: "{{ project_type in ['mcp-server', 'abap-project'] }}"
 
 workspace_color:
   type: str
